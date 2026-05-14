@@ -1,0 +1,19 @@
+[
+    {
+        "titre": "projet IA",
+        "date": "demain",
+        "heure": "14h",
+        "lieu": "salle B",
+        "participants": "Ahmed, Sara",
+        "created_at": "2026-05-11 18:52:11"
+    },
+    {
+        "id": 2,
+        "titre": "projet IA",
+        "date": "",
+        "heure": "",
+        "lieu": "",
+        "participants": "Ahmed, Sara",
+        "created_at": "2026-05-12 13:23:25"
+    }
+]
