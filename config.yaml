@@ -1,0 +1,11 @@
+credentials:
+  usernames:
+    secretaire: # Tu peux nommer l'utilisateur comme tu veux ici
+      email: agentsecretairegeneral@gmail.com
+      name: Agent Secrétariat
+      password: 'LE_HASH_QUE_TU_AS_GENERE' # Remplace par ton hash
+
+cookie:
+  expiry_days: 30
+  key: random_key_unique_a_ton_projet
+  name: auth_cookie
