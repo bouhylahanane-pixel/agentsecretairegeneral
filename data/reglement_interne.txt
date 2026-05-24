@@ -1,70 +1,41 @@
-================================================================================
-RÈGLEMENT INTÉRIEUR ET PROCÉDURES DU SECRÉTARIAT GÉNÉRAL (REV. 2026)
+# SMART AUTOMATION TECHNOLOGIES TANGER
+# RÈGLEMENT INTÉRIEUR ET PROCÉDURES DU SECRÉTARIAT GÉNÉRAL (REV. 2026)
 
-SECTION 1 : HORAIRES DE TRAVAIL ET DISPONIBILITÉ
+## SECTION 1 : HORAIRES DE TRAVAIL ET DISPONIBILITÉ
+* **Horaires réglementaires** : Les horaires de travail réglementaires au sein du Secrétariat Général sont rigoureusement fixés de 08:30 à 16:30, du lundi au vendredi (durée hebdomadaire de 40 heures).
+* **Pause Déjeuner** : Une pause déjeuner obligatoire de 45 minutes est planifiée entre 12:30 et 13:30. Pendant ce créneau, une permanence minimale doit être assurée à tour de rôle par l'équipe administrative pour la réception des appels urgents.
+* **Période de Ramadan** : Durant le mois sacré de Ramadan, les horaires sont aménagés de manière continue de 09:00 à 15:00, sans interruption. La pause déjeuner est suspendue durant cette période.
+* **Retards et Absences** : Tout retard ou absence imprévue pour cas de force majeure doit être obligatoirement signalé par e-mail ou par téléphone au Secrétariat Général avant 08:00 le jour même. Les retards répétés sans justification écrite feront l'objet d'un avertissement inscrit au dossier de l'employé par la Secrétaire Générale Fatima.
+* **Heures Supplémentaires** : Toute demande d'heures supplémentaires pour surcharge d'activité doit être préalablement validée par écrit par le Directeur RH Ahmed avant son exécution.
 
-Les horaires de travail réglementaires au sein du Secrétariat Général sont rigoureusement fixés de 08:30 à 16:30, du lundi au vendredi (durée hebdomadaire de 40 heures).
+## SECTION 2 : CONGÉS ET ABSENCES (DROITS ET DÉLAIS)
+* **Principe Général** : Le Secrétariat Général applique strictement les dispositions légales relatives aux suspensions de contrat de travail et congés réglementaires.
+* **Congé Annuel** : Chaque collaborateur acquiert un droit de 22 jours ouvrables de congé payé par année de service effectif. Les demandes de départ en congé doivent être formulées au moins 15 jours calendaires à l'avance via l'Agent ou le formulaire standard de l'entreprise.
+* **Congé de Maternité** : Conformément aux articles du Code du travail, les collaboratrices ont droit à un congé de maternité légal de 14 semaines consécutives (soit 98 jours), rémunéré à 100%. La collaboratrice doit transmettre un certificat médical officiel mentionnant la date présumée de l'accouchement au moins 3 semaines avant le début prévisionnel du congé.
+* **Congé de Paternité** : À l'occasion d'une naissance, le collaborateur bénéficie de 3 jours de congé de paternité payés à 100% par l'employeur. Ces jours doivent être obligatoirement planifiés et pris dans les 15 jours suivant la date de naissance de l'enfant.
+* **Congé Maladie** : En cas d'arrêt maladie, l'employé doit faire parvenir un certificat médical de justification valide au département des Ressources Humaines dans un délai de 48 heures maximum sous peine de sanction pour absence injustifiée.
+* **Congés Spéciaux (Événements Familiaux)** :
+  - Mariage du collaborateur : 4 jours ouvrables.
+  - Naissance ou circoncision d'un enfant : 3 jours ouvrables.
+  - Décès d'un conjoint, d'un parent ou d'un enfant : 3 jours ouvrables.
 
-Pause Déjeuner : Une pause déjeuner obligatoire de 45 minutes est planifiée entre 12:30 et 13:30. Pendant ce créneau, une permanence minimale doit être assurée à tour de rôle par l'équipe administrative pour la réception des appels urgents.
+## SECTION 3 : DEMANDES DE MATÉRIEL INFORMATIQUE ET LOGISTIQUE
+* **Principe Général** : L'attribution de matériel bureautique, informatique ou logistique est soumise à une procédure de validation systématique afin d'assurer la traçabilité des actifs de l'entreprise.
+* **Procédure Standard** : Toute demande de nouvel équipement (ordinateur portable, écran additionnel, clavier, souris, fournitures de bureau) doit être initiée par la création d'un ticket de demande d'achat ou d'attribution auprès du Secrétariat.
+* **Délais d'Approvisionnement** : Le service informatique et logistique dispose d'un délai de traitement réglementaire de 48 heures ouvrables pour configurer, tester et livrer le matériel à l'employé demandeur après validation de la demande.
+* **Procédure d'Urgence** : En cas de panne matérielle lourde et bloquante (ex: disque dur en panne, écran cassé empêchant le travail), une procédure prioritaire est activée. L'employé doit appeler directement le secrétariat ou envoyer un message marqué comme urgent. Le traitement, le remplacement du matériel défectueux et la mise à disposition d'une unité de secours sont garantis sous 2 heures ouvrables.
 
-Période de Ramadan : Durant le mois sacré de Ramadan, les horaires sont aménagés de manière continue de 09:00 à 15:00, sans interruption. La pause déjeuner est suspendue durant cette période.
+## SECTION 4 : GÉNÉRATION ET VALIDATION DES DOCUMENTS ADMINISTRATIFS
+* **Principe Général** : Les attestations et documents délivrés par le Secrétariat Général revêtent un caractère légal et officiel. Ils sont générés numériquement mais soumis à un protocole de sécurité strict.
+* **Signature Obligatoire** : Bien que les attestations (de stage, de travail, de présence) et les convocations soient générées automatiquement par l'Agent Intelligent sous format PDF, elles n'ont aucune valeur légale sans la signature manuscrite ou électronique et le cachet officiel de la Secrétaire Générale Fatima.
+* **Délégation de Signature** : En cas d'absence prolongée ou de déplacement professionnel de Fatima, la délégation de signature est officiellement transférée au Directeur RH Ahmed pour éviter tout blocage administratif.
+* **Délais d'Obtention** : Le délai maximal d'instruction et de signature d'un document administratif (attestation ou certificat) est fixé à 24 heures ouvrables à compter de la soumission de la demande à l'Agent. L'employé reçoit une alerte e-mail contenant le document signed dès validation.
 
-Retards et Absences : Tout retard ou absence imprévue pour cas de force majeure doit être obligatoirement signalé par e-mail ou par téléphone au Secrétariat Général avant 08:00 le jour même. Les retards répétés sans justification écrite feront l'objet d'un avertissement inscrit au dossier de l'employé par la Secrétaire Générale Fatima.
-
-Heures Supplémentaires : Toute demande d'heures supplémentaires pour surcharge d'activité doit être préalablement validée par écrit par le Directeur RH Ahmed avant son exécution.
-
-SECTION 2 : CONGÉS ET ABSENCES (DROITS ET DÉLAIS)
-
-Le Secrétariat Général applique strictement les dispositions légales relatives aux suspensions de contrat de travail et congés réglementaires.
-
-Congé Annuel : Chaque collaborateur acquiert un droit de 22 jours ouvrables de congé payé par année de service effectif. Les demandes de départ en congé doivent être formulées au moins 15 jours calendaires à l'avance via l'Agent ou le formulaire standard de l'entreprise.
-
-Congé de Maternité : Conformément aux articles du Code du travail, les collaboratrices ont droit à un congé de maternité légal de 14 semaines consécutives (soit 98 jours), rémunéré à 100%. La collaboratrice doit transmettre un certificat médical officiel mentionnant la date présumée de l'accouchement au moins 3 semaines avant le début prévisionnel du congé.
-
-Congé de Paternité : À l'occasion d'une naissance, le collaborateur bénéficie de 3 jours de congé de paternité payés à 100% par l'employeur. Ces jours doivent être obligatoirement planifiés et pris dans les 15 jours suivant la date de naissance de l'enfant.
-
-Congé Maladie : En cas d'arrêt maladie, l'employé doit faire parvenir un certificat médical de justification valide au département des Ressources Humaines dans un délai de 48 heures maximum sous peine de sanction pour absence injustifiée.
-
-Congés Spéciaux (Événements Familiaux) :
-
-Mariage du collaborateur : 4 jours ouvrables.
-
-Naissance ou circoncision d'un enfant : 3 jours ouvrables.
-
-Décès d'un conjoint, d'un parent ou d'un enfant : 3 jours ouvrables.
-
-SECTION 3 : DEMANDES DE MATÉRIEL INFORMATIQUE ET LOGISTIQUE
-
-L'attribution de matériel bureautique, informatique ou logistique est soumise à une procédure de validation systématique afin d'assurer la traçabilité des actifs de l'entreprise.
-
-Procédure Standard : Toute demande de nouvel équipement (ordinateur portable, écran additionnel, clavier, souris, fournitures de bureau) doit être initiée par la création d'un ticket de demande d'achat ou d'attribution auprès du Secrétariat.
-
-Délais d'Approvisionnement : Le service informatique et logistique dispose d'un délai de traitement réglementaire de 48 heures ouvrables pour configurer, tester et livrer le matériel à l'employé demandeur après validation de la demande.
-
-Procédure d'Urgence : En cas de panne matérielle lourde et bloquante (ex: disque dur en panne, écran cassé empêchant le travail), une procédure prioritaire est activée. L'employé doit appeler directement le secrétariat ou envoyer un message marqué comme urgent. Le traitement, le remplacement du matériel défectueux et la mise à disposition d'une unité de secours sont garantis sous 2 heures ouvrables.
-
-SECTION 4 : GÉNÉRATION ET VALIDATION DES DOCUMENTS ADMINISTRATIFS
-
-Les attestations et documents délivrés par le Secrétariat Général revêtent un caractère légal et officiel. Ils sont générés numériquement mais soumis à un protocole de sécurité strict.
-
-Signature Obligatoire : Bien que les attestations (de stage, de travail, de présence) et les convocations soient générées automatiquement par l'Agent Intelligent sous format PDF, elles n'ont aucune valeur légale sans la signature manuscrite ou électronique et le cachet officiel de la Secrétaire Générale Fatima.
-
-Délégation de Signature : En cas d'absence prolongée ou de déplacement professionnel de Fatima, la délégation de signature est officiellement transférée au Directeur RH Ahmed pour éviter tout blocage administratif.
-
-Délais d'Obtention : Le délai maximal d'instruction et de signature d'un document administratif (attestation ou certificat) est fixé à 24 heures ouvrables à compter de la soumission de la demande à l'Agent. L'employé reçoit une alerte e-mail contenant le document signé dès validation.
-
-SECTION 5 : PLANIFICATION DES RÉUNIONS ET RÉDACTION DES PROCÈS-VERBAUX (PV)
-
-La planification des réunions de travail et la formalisation des décisions prises obéissent à un protocole d'organisation structuré.
-
-Réservation des Salles : Le Secrétariat dispose de deux salles de réunion officielles :
-
-La "Salle Atlas" (capacité maximale de 12 personnes, équipée d'un système de visioconférence et d'un tableau blanc).
-
-La "Salle Toubkal" (capacité maximale de 6 personnes, idéale pour les entretiens individuels ou les petits points d'équipe).
-
-Délai de Réservation : La réservation d'une salle doit obligatoirement être enregistrée en base de données par l'Agent au moins 4 heures avant le début de la réunion.
-
-Rédaction du Procès-Verbal (PV) : Pour chaque réunion officielle, un rédacteur de séance est désigné. Il a l'obligation légale de rédiger et de soumettre le PV de réunion dans un délai de 24 heures suivant la clôture de la séance.
-
-Validation et Archivage : Une fois rédigé, le PV doit être relu et validé par l'organisateur principal de la réunion. Après validation, le document est converti en PDF, envoyé par e-mail à tous les participants, et indexé de manière permanente dans l'historique SQL pour servir de preuve documentaire des décisions d'entreprise.
+## SECTION 5 : PLANIFICATION DES RÉUNIONS ET RÉDACTION DES PROCÈS-VERBAUX (PV)
+* **Principe Général** : La planification des réunions de travail et la formalisation des décisions prises obéissent à un protocole d'organisation structuré.
+* **Réservation des Salles** : Le Secrétariat dispose de deux salles de réunion officielles :
+  - La "Salle Atlas" (capacité maximale de 12 personnes, équipée d'un système de visioconférence et d'un tableau blanc).
+  - La "Salle Toubkal" (capacité maximale de 6 personnes, idéale pour les entretiens individuels ou les petits points d'équipe).
+* **Délai de Réservation** : La réservation d'une salle doit obligatoirement être enregistrée en base de données par l'Agent au moins 4 heures avant le début de la réunion.
+* **Rédaction du Procès-Verbal (PV)** : Pour chaque réunion officielle, un rédacteur de séance est désigné. Il a l'obligation légale de rédiger et de soumettre le PV de réunion dans un délai de 24 heures suivant la clôture de la séance.
+* **Validation et Archivage** : Une fois rédigé, le PV doit être relu et validé par l'organisateur principal de la réunion. Après validation, le document est converti en PDF, envoyé par e-mail à tous les participants, et indexé de manière permanente dans l'historique SQL pour servir de preuve documentaire des décisions d'entreprise.

@@ -1,0 +1,28 @@
+# SMART AUTOMATION TECHNOLOGIES TANGER
+# CATALOGUE DES FORMATIONS INTERNES (SESSION 2026)
+
+## SECTION 1 : PROGRAMME DE FORMATION INDUSTRIE 4.0 ET DATA ANALYTICS
+* **Objectif Général** : Développer l'expertise technique des collaborateurs sur l'exploitation des données de production et l'intégration de l'intelligence artificielle sur site.
+
+* **Module 1 : Initiation à la Maintenance Prédictive sur Automates Industriels**
+  - **Public visé** : Techniciens de maintenance, Ingénieurs automaticiens, Équipe Technique.
+  - **Durée** : 14 heures (réparties sur 2 jours).
+  - **Formateur** : Pôle Data & Analytics (animé par Meryem El khoumri).
+  - **Contenu** : Collecte des données IoT en temps réel, analyse des séries temporelles des machines de la zone TAC/TFZ, détection des anomalies et prédiction des pannes pour réduire les arrêts de production.
+
+* **Module 2 : RGPD, Sécurité et Confidentialité des Données Industrielles**
+  - **Public visé** : Obligatoire pour toute l'équipe Technique (Développeurs, Admins Système) et RH.
+  - **Durée** : 4 heures (1 demi-journée).
+  - **Formateur** : Amine Benjelloun (Administrateur Système).
+  - **Contenu** : Bonnes pratiques de sécurité sur les bases de données SQL, chiffrement des flux de données, gestion des accès VPN pour le travail à distance, et conformité avec la législation marocaine sur la protection des données.
+
+* **Module 3 : Data-Driven HR : Optimisation des Plannings par l'Analyse de Données**
+  - **Public visé** : Personnel des Ressources Humaines et Managers d'équipes.
+  - **Durée** : 7 heures (1 jour).
+  - **Formateur** : Pôle Data & Analytics.
+  - **Contenu** : Croisement des données de pointage avec les indicateurs de charge opérationnelle pour concevoir des plannings équilibrés et réduire la fatigue des équipes sur les chantiers de Tanger Med.
+
+## SECTION 2 : PROCÉDURE DE DEMANDE ET D'INSCRIPTION
+* **Règle de Soumission** : Toute demande d'inscription à une session de formation (qu'elle soit à l'initiative de l'employé ou suggérée par un manager) doit être obligatoirement soumise à la Chargée de Formation (Sanaa El Amrani).
+* **Délai Réglementaire** : La demande doit être formulée via l'Agent Intelligent ou par formulaire interne au moins 30 jours calendaires avant la date prévue de la session pour permettre la réorganisation des plannings de présence.
+* **Validation Finale** : L'approbation budgétaire et logistique doit être validée par écrit par la Directrice Financière (Karima Tazi) et le Directeur RH (Ahmed Ahmadi) avant l'envoi de la convocation officielle par le Secrétariat.

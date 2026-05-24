@@ -1,0 +1,19 @@
+# SMART AUTOMATION TECHNOLOGIES TANGER
+# FAQ ET SUPPORT TECHNIQUE INFORMATIQUE (REV. 2026)
+
+## SECTION 1 : CONNEXIONS RÉSEAU ET INFRASTRUCTURE DE TANGER
+* **Réseaux Wi-Fi des Locaux** : Deux réseaux Wi-Fi principaux sont disponibles au sein du siège à Tanger :
+  - `Smart-Corporate` : Réservé exclusivement aux ordinateurs portables professionnels de l'entreprise. Connexion automatique via adresse MAC et identifiants de session Windows.
+  - `Smart-Guest` : Dédié aux clients et visiteurs (zones TFZ/TAC). Le code d'accès temporaire doit être demandé chaque matin au Secrétariat Général auprès de Souhaila Ben.
+
+* **Accès VPN pour le Télétravail et les Chantiers Extérieurs** : Pour tous les collaborateurs en déplacement sur les sites industriels (Tanger Med, Tanger Automotive City) ou travaillant à distance (comme Meryem pour les analyses de données), la connexion au réseau de l'entreprise nécessite l'activation obligatoire du client VPN sécurisé (`SmartConnect-VPN`).
+  - **Procédure** : Ouvrir l'application VPN, entrer ses identifiants professionnels, et valider la double authentification (MFA) sur son téléphone.
+
+## SECTION 2 : GESTION DES IDENTIFIANTS ET ACCÈS AUX BASES DE DONNÉES
+* **Création de Compte** : Les adresses e-mails (format `prenom.nom@entreprise.ma`) et les accès aux serveurs de fichiers sont générés automatiquement par l'Administrateur Système (Amine Benjelloun) lors de l'onboarding du collaborateur.
+* **Accès aux bases de données SQL** : L'accès aux bases de données de production ou à l'historique SQL est strictement restreint. Les demandes de droits de lecture ou d'écriture (notamment pour l'extraction de données IA par Meryem ou Hanane) doivent être validées par le responsable du pôle technique avant exécution par Amine.
+* **Perte de Mot de Passe** : En cas de perte de mot de passe ou de compte bloqué après 3 tentatives infructueuses, l'employé doit se présenter physiquement auprès d'Amine Benjelloun ou envoyer une demande de réinitialisation signée par son responsable hiérarchique.
+
+## SECTION 3 : PROTOCOLE D'URGENCE ET SÉCURITÉ INFORMATIQUE
+* **Panne Réseau Globale** : En cas de coupure totale des serveurs ou d'indisponibilité de la base de données SQL principale, l'alerte doit être donnée immédiatement. L'employé doit envoyer un message interne à Amine Benjelloun contenant obligatoirement la balise `[CRITIQUE - SERVEUR]` en objet.
+* **Tentative de Phishing ou Incident de Sécurité** : Si un collaborateur reçoit un e-mail suspect ou détecte une activité anormale sur son poste, il doit immédiatement déconnecter son ordinateur du réseau (débrancher le câble Ethernet ou couper le Wi-Fi) et contacter Amine au poste téléphonique interne 404 pour un audit de sécurité.

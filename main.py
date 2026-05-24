@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI
+import requests
+from fastapi import FastAPI, File, UploadFile, HTTPException  # 🟢 MISE À JOUR : Ajout de File et UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -8,8 +9,8 @@ from models.schemas import UserRequest
 from services.orchestrator import executer_agent
 from tools.meeting import list_meetings, find_meeting_by_date, delete_meeting
 
-# Extraction des fonctions d'extraction analytics
-from tools.history_manager import get_analytics_stats, get_activity_by_action
+# EXTRACTION CORRIGÉE : Ajout de get_all_logs pour ton tableau de bord
+from tools.history_manager import get_analytics_stats, get_activity_by_action, get_all_logs
 
 # 1. Initialisation unique de l'application FastAPI
 app = FastAPI(
@@ -21,11 +22,14 @@ app = FastAPI(
 # 2. 🔥 CORS STRICT (Sécurité pour Streamlit & Frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permet à Streamlit de se connecter sans blocage
+    allow_origins=["*"],  # Permet à Streamlit et React de se connecter sans blocage
     allow_credentials=True,
     allow_methods=["*"],  # Permet GET, POST, DELETE, etc.
     allow_headers=["*"],
 )
+
+# 🟢 Récupération sécurisée de la clé Groq stockée dans l'environnement (chargée par ton .env)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
 # ==========================================
@@ -52,6 +56,12 @@ async def get_chart_data():
     return get_activity_by_action()
 
 
+@app.get("/analytics/logs", tags=["Analytics"])
+async def get_raw_logs():
+    """Retourne la liste complète des logs pour alimenter ton tableau de données (React/Streamlit)."""
+    return get_all_logs()
+
+
 # ==========================================
 # 🤖 ROUTES DE L'AGENT IA (Synchronisée avec app_demo.py)
 # ==========================================
@@ -76,6 +86,96 @@ async def process_agent(data: dict):
 
     # Renvoie le dictionnaire complet attendu par app_demo.py (response, pdf_path, etc.)
     return resultat_agent
+
+
+# ==========================================
+# 📝 🟢 NOUVELLE ROUTE : GÉNÉRATION AUTOMATIQUE DE PV DE RÉUNION
+# ==========================================
+@app.post("/agent/generate-pv", tags=["Agent"])
+async def generate_pv(file: UploadFile = File(...)):
+    """
+    Prend en entrée un fichier audio binaire (micro direct ou dépôt), 
+    le retranscrit via Whisper, et structure un Procès-Verbal officiel en Markdown via Llama 3.
+    """
+    try:
+        # 1. Sauvegarde temporaire du flux audio reçu
+        temp_audio_path = f"temp_{file.filename}"
+        with open(temp_audio_path, "wb") as buffer:
+            buffer.write(await file.read())
+
+        # 2. Appel à l'API Whisper de Groq pour la transcription acoustique
+        whisper_url = "https://api.groq.com/openai/v1/audio/transcriptions"
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        
+        # Guide d'aide contextuel pour limiter les fautes sur le jargon administratif
+        invite_contexte = "Réunion, ordre du jour, décisions, plan d'action, participants, compte-rendu, Meryem, Sanaa."
+
+        with open(temp_audio_path, "rb") as audio_file:
+            files = {
+                "file": (file.filename, audio_file, file.content_type if file.content_type else "audio/wav"),
+                "model": (None, "whisper-large-v3"),
+                "language": (None, "fr"),
+                "prompt": (None, invite_contexte)
+            }
+            whisper_response = requests.post(whisper_url, headers=headers, files=files)
+        
+        # Nettoyage immédiat du fichier de transit
+        if os.path.exists(temp_audio_path):
+            os.remove(temp_audio_path)
+
+        if whisper_response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Échec Whisper Groq : {whisper_response.text}")
+        
+        transcription_brute = whisper_response.json().get("text", "")
+        
+        if not transcription_brute.strip():
+            return {"pv_markdown": "⚠️ L'enregistrement audio ne contient aucune voix ou contenu détectable."}
+
+        # 3. Traitement NLP avancé par Llama 3 pour la rédaction du PV structuré
+        llm_url = "https://api.groq.com/openai/v1/chat/completions"
+        
+        prompt_systeme = (
+            "Tu es un secrétaire de direction de haut niveau. Ton travail consiste à nettoyer la transcription "
+            "brute d'une réunion pour rédiger un Procès-Verbal (PV) de réunion parfaitement propre, structuré et professionnel en Markdown.\n\n"
+            "Tu dois impérativement organiser ton retour selon la mise en forme suivante :\n"
+            "# 📝 PROCÈS-VERBAL DE RÉUNION\n"
+            "**Date :** [Distinguer la date si elle est dite explicitement, sinon écrire la date actuelle]\n"
+            "**Participants :** [Lister tous les noms propres ou prénoms entendus dans la conversation]\n\n"
+            "## 🎯 1. Ordre du jour\n"
+            "[Écrire un résumé clair de l'objectif de la réunion]\n\n"
+            "## 💬 2. Synthèse des échanges\n"
+            "[Faire un résumé condensé, fluide et rédigé des discussions en supprimant les hésitations et tics de langage]\n\n"
+            "## 📌 3. Décisions retenues\n"
+            "[Lister sous forme de puces claires les choix ou arbitrages validés]\n\n"
+            "## 📅 4. Plan d'action\n"
+            "| Action | Responsable | Échéance |\n"
+            "| :--- | :--- | :--- |\n"
+            "| [Intitulé de la tâche] | [Nom] | [Date cible ou 'À définir'] |\n\n"
+            "Garde un ton formel, concis, neutre et très corporate."
+        )
+
+        llm_payload = {
+            "model": "llama3-70b-8192",  # Choix du grand modèle pour un esprit de synthèse optimal
+            "messages": [
+                {"role": "system", "content": prompt_systeme},
+                {"role": "user", "content": f"Voici le texte brut issu de l'enregistrement de la réunion :\n{transcription_brute}"}
+            ],
+            "temperature": 0.2  # Basse température pour coller strictement aux faits énoncés
+        }
+
+        llm_response = requests.post(llm_url, headers=headers, json=llm_payload)
+        
+        if llm_response.status_code == 200:
+            pv_redige = llm_response.json()["choices"][0]["message"]["content"]
+            return {
+                "transcription": transcription_brute,
+                "pv_markdown": pv_redige
+            }
+        else:
+            raise HTTPException(status_code=500, detail=f"Échec LLM Groq : {llm_response.text}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/email/process", tags=["Email"])

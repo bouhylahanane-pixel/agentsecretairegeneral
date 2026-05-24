@@ -95,8 +95,112 @@ def executer_agent(message: str, user: str):
         params = action_data.get("parameters", {})
         priorite = params.get("priorite", "Normale")
 
+    # ===================================================================
+    # 🌍 ZONE D'IDENTIFICATION GLOBALE AMÉLIORÉE (Employés vs Stagiaires)
+    # ===================================================================
+    nom_recherche = params.get("nom", "Utilisateur")
+    
+    # Valeurs de secours globales appliquées d'office
+    params["poste"] = "Collaborateur"
+    params["departement"] = "Opérations"
+    params["date_debut"] = datetime.now().strftime("%d/%m/%Y")
+    params["cin"] = "Non précisée"
+    
+    role_utilisateur = None # Contiendra "employe" ou "stagiaire"
+
+    if nom_recherche and nom_recherche != "Utilisateur":
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # 🔍 RECHERCHE 1 : Dans la table des EMPLOYÉS
+            cursor.execute(
+                """SELECT * FROM employes 
+                   WHERE LOWER(?) LIKE '%' || LOWER(nom) || '%' 
+                   OR LOWER(?) LIKE '%' || LOWER(prenom) || '%'
+                   OR LOWER(nom) LIKE ? 
+                   OR LOWER(prenom) LIKE ?""", 
+                (nom_recherche, nom_recherche, f"%{nom_recherche}%", f"%{nom_recherche}%")
+            )
+            row = cursor.fetchone()
+            
+            if row:
+                role_utilisateur = "employe"
+                print(f"🎉 Employé identifié avec succès globalement : {row['prenom']} {row['nom']}")
+                params["nom"] = f"{row['prenom']} {row['nom']}"
+                
+                colonnes = [d[0] for d in cursor.description]
+                if "poste" in colonnes and row["poste"]:
+                    params["poste"] = row["poste"]
+                if "cin" in colonnes and row["cin"]:
+                    params["cin"] = row["cin"]
+                if "email" in colonnes and row["email"]:
+                    params["email"] = row["email"]
+                if "departement" in colonnes and row["departement"]:
+                    params["departement"] = row["departement"]
+                if "date_recrutement" in colonnes and row["date_recrutement"]:
+                    params["date_debut"] = row["date_recrutement"]
+                elif "date_debut" in colonnes and row["date_debut"]:
+                    params["date_debut"] = row["date_debut"]
+            
+            else:
+                # 🔍 RECHERCHE 2 : Si pas trouvé, on cherche dans la table STAGIAIRES
+                cursor.execute(
+                    """SELECT * FROM stagiaires 
+                       WHERE LOWER(?) LIKE '%' || LOWER(nom) || '%' 
+                       OR LOWER(?) LIKE '%' || LOWER(prenom) || '%'
+                       OR LOWER(nom) LIKE ? 
+                       OR LOWER(prenom) LIKE ?""", 
+                    (nom_recherche, nom_recherche, f"%{nom_recherche}%", f"%{nom_recherche}%")
+                )
+                row_stagiaire = cursor.fetchone()
+                
+                if row_stagiaire:
+                    role_utilisateur = "stagiaire"
+                    print(f"🎓 Stagiaire identifié avec succès globalement : {row_stagiaire['prenom']} {row_stagiaire['nom']}")
+                    params["nom"] = f"{row_stagiaire['prenom']} {row_stagiaire['nom']}"
+                    params["poste"] = "Stagiaire"
+                    
+                    colonnes_stg = [d[0] for d in cursor.description]
+                    if "email" in colonnes_stg and row_stagiaire["email"]:
+                        params["email"] = row_stagiaire["email"]
+                    if "ecole_etudes" in colonnes_stg and row_stagiaire["ecole_etudes"]:
+                        params["ecole_etudes"] = row_stagiaire["ecole_etudes"]
+                    if "sujet_stage" in colonnes_stg and row_stagiaire["sujet_stage"]:
+                        params["sujet_stage"] = row_stagiaire["sujet_stage"]
+                    if "date_debut" in colonnes_stg and row_stagiaire["date_debut"]:
+                        params["date_debut"] = row_stagiaire["date_debut"]
+                    if "date_fin" in colonnes_stg and row_stagiaire["date_fin"]:
+                        params["date_fin"] = row_stagiaire["date_fin"]
+                        
+            conn.close()
+        except Exception as e:
+            print("Erreur lors de l'identification globale SQL :", e)
+
     # ==========================================================
-    # 🔥 SÉCURITÉ RAG : CONSULTATION DU RÈGLEMENT INTÉRIEUR
+    # 🔒 CONTRÔLE ET SÉCURITÉ DES PERMISSIONS SUR LES DOCUMENTS
+    # ==========================================================
+    if action == "generate_document":
+        doc_type = params.get("type")
+        
+        # RÈGLE 1 : Un stagiaire ne peut pas générer d'attestation de travail
+        if doc_type == "attestation_travail" and role_utilisateur == "stagiaire":
+            response = f"Désolé {params['nom']}. En tant que stagiaire, vous n'avez pas l'autorisation de générer une attestation de travail. Seules les attestations de stage vous sont accessibles."
+            result = f"Accès refusé : Tentative de génération d'attestation de travail par le stagiaire {params['nom']}"
+            print(f"🛑 {result}")
+            # On court-circuite directement l'exécution pour empêcher la suite (PDF + Mail)
+            return {"user": user, "action": action, "parameters": params, "result": result, "download_url": "", "response": response, "pdf_path": ""}
+
+        # RÈGLE 2 : Un employé sous contrat ne peut pas générer d'attestation de stage
+        if doc_type == "attestation_stage" and role_utilisateur == "employe":
+            response = f"Désolé {params['nom']}. Vous êtes enregistré en tant qu'employé permanent. Vous ne pouvez pas générer une attestation de stage."
+            result = f"Accès refusé : Tentative de génération d'attestation de stage par l'employé {params['nom']}"
+            print(f"🛑 {result}")
+            return {"user": user, "action": action, "parameters": params, "result": result, "download_url": "", "response": response, "pdf_path": ""}
+
+    # ==========================================================
+    # 📜 SÉCURITÉ RAG : CONSULTATION DU RÈGLEMENT INTÉRIEUR
     # ==========================================================
     if action == "consult_regulation":
         response = decision.get("rag_response", "Je n'ai pas trouvé d'information à ce sujet dans le règlement.")
@@ -139,12 +243,10 @@ def executer_agent(message: str, user: str):
     # 📝 ACTION PROCÈS VERBAL (Depuis action principale)
     # ==========================================================
     elif action == "generate_pv":
-        # Remplissage intelligent des paramètres
         if not params.get("objet"): params["objet"] = "Suivi Hebdomadaire & Avancement PFE"
         if not params.get("lieu"): params["lieu"] = "Salle de Réunion Principale"
         if not params.get("participants"): params["participants"] = "Meryem, Équipe Technique, Encadrant"
         
-        # Correction de la clé : on utilise le 'message' global reçu par la fonction
         if not params.get("resume") or params["resume"] == "":
             params["resume"] = message
 
@@ -168,7 +270,6 @@ def executer_agent(message: str, user: str):
                 f"**Prochaine réunion planifiée :** {params['next_meeting']}"
             )
 
-            # 🔥 EMAIL AUTOMATIQUE
             if params.get("email"):
                 sujet_mail = "Procès verbal de réunion"
                 if priorite == "Haute":
@@ -218,86 +319,45 @@ def executer_agent(message: str, user: str):
             sujet_mail = f"[URGENT 🚨] {sujet_mail}"
 
         # ------------------------------------------------------
-        # 🔹 [1] ATTESTATION STAGE
+        # 🔹 [1] ATTESTATION STAGE (Dynamisée avec études/sujet)
         # ------------------------------------------------------
         if doc_type == "attestation_stage":
-            nom_recherche = params.get("nom", "Sanaa")
+            params["entreprise"] = "Smart Automation Technologies"
+            params["departement"] = "Data & Analytics"
             
-            params["entreprise"] = "InnovData & Analytics Corp"
-            params["departement"] = "Technique"
-            params["encadrant"] = "Fatima (Secrétaire Général)"
-            params["date_debut"] = "01 Février 2026"
-            params["date_fin"] = "31 Juillet 2026"
-            
+            # Récupération dynamique de l'encadrant Souhaila Ben
+            params["encadrant"] = "Souhaila Ben (Secrétaire Générale)"
             try:
                 conn = sqlite3.connect(DB_PATH)
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM employes WHERE LOWER(nom) LIKE LOWER(?)", (f"%{nom_recherche}%",))
-                row = cursor.fetchone()
-                
-                if row:
-                    print(f"🎉 Employé trouvé dans la BDD : {row['nom']}")
-                    params["nom"] = row["nom"]
-                    # Correction sécurisée de la lecture des colonnes SQLite Row
-                    colonnes = [d[0] for d in cursor.description]
-                    if "poste" in colonnes and row["poste"]:
-                        params["poste"] = row["poste"]
-                    if "email" in colonnes and row["email"] and "rh" in row["email"].lower():
-                        params["departement"] = "Ressources Humaines"
+                cursor.execute("SELECT prenom, nom FROM employes WHERE LOWER(poste) LIKE '%secrétaire%' LIMIT 1")
+                sec_row = cursor.fetchone()
+                if sec_row:
+                    params["encadrant"] = f"{sec_row['prenom'].capitalize()} {sec_row['nom'].capitalize()} (Secrétaire Générale)"
                 conn.close()
-            except Exception as e:
-                print("Erreur lors de la récupération SQL (Stage) :", e)
-
-            if not params.get("nom") or params["nom"] == "Utilisateur":
-                params["nom"] = nom_recherche
-
+            except Exception as e_sec:
+                print("Note: Impossible de récupérer la secrétaire en BDD.", e_sec)
+            
             filename = generate_attestation_stage_pdf(params)
             
             response = (
                 f"Bonjour {params['nom']},\n\n"
                 f"Votre attestation de stage a été générée avec succès.\n\n"
-                f"**Entreprise :** {params['entreprise']}\n\n"
-                f"**Département :** {params['departement']}\n\n"
-                f"**Encadrant :** {params['encadrant']}\n\n"
-                f"**Période :** du {params['date_debut']} au {params['date_fin']}\n\n"
+                f"**Entreprise :** {params['entreprise']}\n"
+                f"**Études suivies :** {params.get('ecole_etudes', 'Cursus Data')}\n"
+                f"**Sujet du Stage :** {params.get('sujet_stage', 'Projet IA')}\n"
+                f"**Encadrant :** {params['encadrant']}\n"
+                f"**Période :** du {params.get('date_debut')} au {params.get('date_fin')}\n\n"
                 f"Cordialement, Service Administratif"
             )
             result = f"PDF généré: {filename}"
             download_url = f"/download/{filename}"
 
         # ------------------------------------------------------
-        # 🔹 [2] ATTESTATION TRAVAIL
+        # 🔹 [2] ATTESTATION TRAVAIL 
         # ------------------------------------------------------
         elif doc_type == "attestation_travail":
-            nom_recherche = params.get("nom", "Ahmed")
-            
-            params["poste"] = "Développeur Full-Stack"
-            params["departement"] = "Technique"
-            params["date_debut"] = "15 Janvier 2024"
-            
-            try:
-                conn = sqlite3.connect(DB_PATH)
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM employes WHERE LOWER(nom) LIKE LOWER(?)", (f"%{nom_recherche}%",))
-                row = cursor.fetchone()
-                
-                if row:
-                    print(f"🎉 Employé trouvé dans la BDD (Travail) : {row['nom']}")
-                    params["nom"] = row["nom"]
-                    colonnes = [d[0] for d in cursor.description]
-                    if "poste" in colonnes and row["poste"]:
-                        params["poste"] = row["poste"]
-                    if "email" in colonnes and row["email"] and "rh" in row["email"].lower():
-                        params["departement"] = "Ressources Humaines"
-                conn.close()
-            except Exception as e:
-                print("Erreur lors de la récupération SQL (Travail) :", e)
-
-            if not params.get("nom") or params["nom"] == "Utilisateur":
-                params["nom"] = nom_recherche
-
             filename = generate_attestation_travail_pdf(params)
             
             response = (
@@ -305,8 +365,8 @@ def executer_agent(message: str, user: str):
                 f"Votre attestation de travail a été générée avec succès.\n\n"
                 f"**Poste actuel :** {params['poste']}\n\n"
                 f"**Département :** {params['departement']}\n\n"
-                f"**Date d'embauche :** {params['date_debut']}\n\n"
-                f"Cordialement, Service Administratif"
+                f"**Lieu d'affectation :** Smart Automation Technologies Tanger\n\n"
+                f"Cordialement, Le Secrétariat Général"
             )
             result = f"PDF généré: {filename}"
             download_url = f"/download/{filename}"
@@ -315,24 +375,8 @@ def executer_agent(message: str, user: str):
         # 🔹 [3] ATTESTATION PRÉSENCE
         # ------------------------------------------------------
         elif doc_type == "attestation_presence":
-            nom_recherche = params.get("nom", "Employé")
             if not params.get("lieu"): params["lieu"] = "Bureaux Principaux de Tanger"
             if not params.get("date"): params["date"] = datetime.now().strftime("%d/%m/%Y")
-            
-            try:
-                conn = sqlite3.connect(DB_PATH)
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM employes WHERE LOWER(nom) LIKE LOWER(?)", (f"%{nom_recherche}%",))
-                row = cursor.fetchone()
-                if row:
-                    params["nom"] = row["nom"]
-                conn.close()
-            except Exception as e:
-                print("Erreur SQL Présence :", e)
-
-            if not params.get("nom") or params["nom"] == "Utilisateur":
-                params["nom"] = nom_recherche
 
             filename = generate_attestation_presence_pdf(params)
             
@@ -373,34 +417,19 @@ def executer_agent(message: str, user: str):
         # 🔹 [5] CONVOCATION ENTRETIEN
         # ------------------------------------------------------
         elif doc_type == "convocation_entretien":
-            nom_recherche = params.get("nom", "Amine")
-            
             if not params.get("entreprise"): params["entreprise"] = "InnovData & Analytics Corp"
-            if not params.get("poste"): params["poste"] = "Data Analyst"
+            if params["poste"] == "Collaborateur": params["poste"] = "Data Analyst"
             if not params.get("recruteur"): params["recruteur"] = "Meryem (Responsable Technique)"
             if not params.get("date"): params["date"] = "Demain"
             if not params.get("heure"): params["heure"] = "15h00"
             if not params.get("salle"): params["salle"] = "Salle d'Entretien Alpha"
             
             params["lieu"] = params["salle"]
-            
-            try:
-                conn = sqlite3.connect(DB_PATH)
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM employes WHERE LOWER(nom) LIKE LOWER(?)", (f"%{nom_recherche.strip()}%",))
-                row = cursor.fetchone()
-                conn.close()
-                
-                if row:
-                    if not params.get("email"): params["email"] = row["email"]
-            except Exception as e:
-                print("Erreur lecture BDD pour entretien:", e)
                 
             filename = generate_convocation_entretien_pdf(params)
             
             response = (
-                f"Bonjour {nom_recherche},\n\n"
+                f"Bonjour {params['nom']},\n\n"
                 f"Votre convocation pour l'entretien d'embauche a été générée avec succès.\n\n"
                 f"**Poste visé :** {params['poste']}\n"
                 f"**Date :** {params['date']} à {params['heure']}\n"
@@ -415,7 +444,7 @@ def executer_agent(message: str, user: str):
             filename = "document_inconnu"
             response = default_template()
 
-        # Envoi d'email automatique
+        # Envoi d'email automatique global unifié
         try:
             if params.get("email"):
                 send_email(
@@ -478,3 +507,22 @@ def executer_agent(message: str, user: str):
             "attachment": filename
         }
     }
+
+
+if __name__ == "__main__":
+    print("🛰️ Mode Test Réel - Sécurité & Droits d'Accès...")
+    
+    # 🧪 TEST 1 : Doit fonctionner (Meryem est stagiaire et demande son attestation de stage)
+    resultat = executer_agent(
+        message="Bonjour, je suis Meryem El khoumri. Pouvez-vous me générer mon attestation de stage s'il vous plaît ?", 
+        user="Meryem_Direct"
+    )
+    print("\n🏁 Réponse finale Test 1 :", resultat["response"])
+    print("-" * 50)
+
+    # 🧪 TEST 2 : Doit être bloqué par la sécurité (Meryem est stagiaire et demande une attestation de travail)
+    resultat_fraude = executer_agent(
+        message="Bonjour, je suis Meryem El khoumri. J'ai besoin d'une attestation de travail immédiatement.", 
+        user="Meryem_Direct"
+    )
+    print("\n🏁 Réponse finale Test 2 :", resultat_fraude["response"])

@@ -1,0 +1,18 @@
+# SMART AUTOMATION TECHNOLOGIES TANGER
+# PROCÉDURES D'ARRIVÉE (ONBOARDING) ET DE DÉPART (OFFBOARDING)
+
+## SECTION 1 : PROCÉDURE D'ARRIVÉE DES NOUVEAUX COLLABORATEURS (ONBOARDING)
+* **Objectif** : Garantir une intégration rapide et conforme de chaque nouveau recruté au sein des équipes de Smart Automation Technologies à Tanger.
+* **Le Premier Jour (Accueil)** : Le nouveau collaborateur est attendu à 09:00 pile au Secrétariat Général. Il est accueilli par la Secrétaire Générale (Souhaila Ben) pour la vérification des pièces administratives.
+* **Signature du Contrat** : Le Directeur RH (Ahmed Ahmadi) reçoit le collaborateur à 10:00 pour la signature officielle du contrat de travail et l'explication de sa fiche de poste.
+* **Badge d'Accès Technique** : Souhaila Ben remet au collaborateur son badge d'accès sécurisé nominatif, obligatoire pour franchir les zones industrielles de Tanger (Zone Franche de Tanger - TFZ, et Tanger Automotive City - TAC).
+* **Configuration du Matériel Informatique** : À 11:00, l'Administrateur Système (Amine Benjelloun) prend en charge le collaborateur pour lui remettre son ordinateur portable configuré, créer ses identifiants réseau, ouvrir son adresse e-mail professionnelle (format: prenom.nom@entreprise.ma) et lui attribuer ses accès aux bases de données SQL de l'entreprise.
+* **Période d'Intégration et Suivi** : La Chargée de Recrutement (Sanaa El Amrani) planifie un point de suivi obligatoire à la fin de la première semaine, puis à la fin du premier mois, pour évaluer l'adaptation du nouveau collaborateur.
+
+## SECTION 2 : PROCÉDURE DE DÉPART DES COLLABORATEURS (OFFBOARDING)
+* **Objectif** : Sécuriser la sortie d'un employé tout en respectant les obligations légales et la protection des données industrielles.
+* **Notification de Départ** : Qu'il s'agisse d'une démission, d'une fin de contrat ou d'une fin de stage, l'information doit être validée par le Directeur RH (Ahmed Ahmadi) et notifiée au Secrétariat Général pour bloquer les futurs plannings.
+* **Restitution du Matériel Informatique** : Le jour de son départ effectif, le collaborateur doit obligatoirement restituer l'intégralité de ses équipements (ordinateur portable, écran additionnel, badge d'accès, clés des locaux) auprès de l'Administrateur Système (Amine Benjelloun) sous un délai maximal de 24 heures avant sa sortie. Amine signe un bon de restitution de matériel.
+* **Révocation des Accès Sécurisés** : Dès la remise du matériel, Amine Benjelloun procède immédiatement à la désactivation des comptes e-mails, des accès VPN et des droits de lecture/écriture sur les bases de données de production pour éviter toute fuite de données industrielles.
+* **Entretien de Fin de Contrat** : Un entretien final est mené par Sanaa El Amrani pour recueillir le retour d'expérience du collaborateur sur son passage chez Smart Automation.
+* **Documents de Sortie (Solde de tout compte)** : Le département des Ressources Humaines dispose d'un délai réglementaire de 48 heures ouvrables après le départ effectif pour générer, faire signer par Ahmed Ahmadi, et remettre à l'employé son reçu pour solde de tout compte, son certificat de travail et son attestation de stage si nécessaire.

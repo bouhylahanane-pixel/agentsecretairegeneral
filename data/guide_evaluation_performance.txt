@@ -1,0 +1,18 @@
+# SMART AUTOMATION TECHNOLOGIES TANGER
+# GUIDE D'ÉVALUATION DE LA PERFORMANCE ET GESTION DES CARRIÈRES (REV. 2026)
+
+## SECTION 1 : LES ENTRETIENS ANNUELS D'ÉVALUATION (EAE)
+* **Période Réglementaire** : Les Entretiens Annuels d'Évaluation (EAE) sont obligatoires pour l'ensemble des collaborateurs de Smart Automation Technologies à Tanger. Ils sont fixés et menés chaque année entre le 1er et le 15 décembre.
+* **Responsables du Processus** : Le processus est supervisé par le Directeur RH (Ahmed Ahmadi) et coordonné sur le terrain par la Chargée de Recrutement et Formation (Sanaa El Amrani). L'entretien individuel est conduit directement par le manager de pôle ou la Secrétaire Générale (Souhaila Ben) selon l'organigramme de rattachement.
+* **Objectif de l'Entretien** : Faire le bilan de l'année écoulée, mesurer le taux de réalisation des objectifs fixés, évaluer les compétences techniques et comportementales, et définir la feuille de route ainsi que les objectifs pour l'année suivante.
+
+## SECTION 2 : CRITÈRES ET INDICATEURS CLÉS DE PERFORMANCE (KPI)
+L'évaluation des collaborateurs s'appuie sur quatre piliers d'indicateurs stricts, dont les données sont croisées avec les outils de l'entreprise :
+1. **Assiduité et Ponctualité** : Suivi rigoureux de la présence et respect des horaires de travail (08:30-16:30 ou 09:00-16:00). Les signalements de retards faits à Souhaila Ben avant 08:00 et l'absence d'avertissements au dossier sont des critères éliminatoires pour l'obtention des primes de rendement.
+2. **Rigueur Administrative et Délais** : Pour les collaborateurs impliqués dans les réunions (comme Hanane ou Mohamed), le respect du délai légal de 24 heures pour la rédaction, la soumission et l'archivage SQL des Procès-Verbaux (PV) est un KPI de performance majeur.
+3. **Compétences Techniques et Innovation 4.0** : Évaluation de la maîtrise des outils de production, de la qualité du code (pour le pôle Technique) et de la participation active aux programmes de formation interne (notamment les modules d'IA et de Maintenance Prédictive animés par Meryem El khoumri).
+4. **Esprit d'Équipe et Synergie** : Capacité à collaborer efficacement entre les pôles Automation et Data pour la réussite des projets phares sur les chantiers de la Tanger Automotive City (TAC).
+
+## SECTION 3 : ÉVOLUTION PROFESSIONNELLE ET PROMOTIONS
+* **Comité de Carrière** : Durant la deuxième quinzaine de janvier, Ahmed Ahmadi réunit la Directrice Financière (Karima Tazi) et les responsables de pôles lors d'un comité de carrière pour valider les demandes de réévaluation salariale ou de promotion interne.
+* **Conditions de Promotion** : Pour prétendre à une évolution de poste (ex: passer de Développeur à Développeur Senior), le collaborateur doit avoir validé au moins 85% de ses KPI annuels et avoir suivi au moins un module de formation technique au cours de l'année.
