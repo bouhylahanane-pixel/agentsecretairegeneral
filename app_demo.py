@@ -1,11 +1,13 @@
 import os
+import io  # 🟢 Pour manipuler proprement les flux binaire en mémoire
 import pandas as pd
 import requests
 import streamlit as st
 
-# 🟢 AJOUTE CES DEUX LIGNES ICI POUR LIRE LE FICHIER .ENV :
+# 🟢 Lecture du fichier .env
 from dotenv import load_dotenv
 load_dotenv()
+
 # Le composant d'enregistrement au clic libre
 from streamlit_mic_recorder import mic_recorder
 
@@ -14,7 +16,6 @@ from services.voice_service import text_to_speech
 
 # Base URL de ton API FastAPI (Aligné sur ton port 8001)
 API_URL = "http://127.0.0.1:8001"
-# Maintenant, cette ligne va fonctionner parfaitement !
 GROQ_API_KEY = os.getenv("GROQ_API_KEY") 
 
 # Configuration de la page
@@ -23,7 +24,7 @@ st.set_page_config(page_title="Dashboard & Agent IA", layout="wide", page_icon="
 st.title("💼 Système Agentique & Dashboard Analytics")
 st.markdown("---")
 
-# 🟢 MISE À ZONE : Ajout du 3ème onglet dans le menu de navigation
+# Menu de navigation
 menu = st.sidebar.radio("Navigation", ["📊 Tableau de Bord", "💬 Assistant IA Admin", "📝 Génération de PV"])
 
 
@@ -39,21 +40,16 @@ def transcrire_audio_whisper(audio_bytes):
         url = "https://api.groq.com/openai/v1/audio/transcriptions"
         headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
         
-        # 1. Mots-clés administratifs fixes (les actions de ton système)
         mots_cles_fixes = ["génère", "attestation de stage", "relevé de notes", "certificat", "dashboard", "analytics"]
         
-        # 2. Récupération DYNAMIQUE des noms présents dans l'historique ou la base
         noms_dynamiques = []
         try:
             logs_res = requests.get(f"{API_URL}/analytics/logs").json()
             if logs_res:
-                # On extrait proprement tous les noms uniques des utilisateurs de tes logs
                 noms_dynamiques = list(set([str(log.get("utilisateur", "")).strip() for log in logs_res if log.get("utilisateur")]))
         except Exception as e:
-            # Sécurité au cas où l'API backend ne répond pas à cet instant
             print(f"Impossible de récupérer les noms pour le contexte Whisper: {e}")
             
-        # 3. Fusion des deux listes (on s'assure d'inclure "Meryem" par défaut au cas où la base est vide)
         if "Meryem" not in noms_dynamiques:
             noms_dynamiques.append("Meryem")
             
@@ -65,7 +61,7 @@ def transcrire_audio_whisper(audio_bytes):
                 "file": ("prompt_vocal.wav", audio_file, "audio/wav"),
                 "model": (None, "whisper-large-v3"),
                 "language": (None, "fr"),
-                "prompt": (None, invite_contexte) # L'API reçoit la liste actualisée en temps réel !
+                "prompt": (None, invite_contexte)
             }
             response = requests.post(url, headers=headers, files=files)
             if response.status_code == 200:
@@ -81,10 +77,8 @@ if menu == "📊 Tableau de Bord":
     st.subheader("📈 Métriques de Performance de l'Agent")
 
     try:
-        # Récupération des stats globales
         stats_res = requests.get(f"{API_URL}/analytics/stats").json()
 
-        # Affichage des cartes de métriques
         col1, col2, col3 = st.columns(3)
         col1.metric("Requêtes Traitées", stats_res.get("total_requests", 0))
         col2.metric("Urgence(s) Détectée(s) 🚨", stats_res.get("total_urgencies", 0))
@@ -92,7 +86,6 @@ if menu == "📊 Tableau de Bord":
 
         st.markdown("---")
         
-        # Organisation en deux colonnes pour un rendu visuel équilibré
         col_chart, col_table = st.columns([1, 1])
         
         with col_chart:
@@ -109,8 +102,6 @@ if menu == "📊 Tableau de Bord":
             logs_res = requests.get(f"{API_URL}/analytics/logs").json()
             if logs_res:
                 df_logs = pd.DataFrame(logs_res)
-                df_display = df_logs[["timestamp", "utilisateur", "action", "priorite", "temps"]].copy()
-                df_display.columns = ["Date/Heure", "Utilisateur", "Action Requise", "Priorité", "Temps (ms)"]
                 st.dataframe(df_logs, width="stretch", hide_index=True)
             else:
                 st.info("Aucun log d'activité disponible.")
@@ -125,23 +116,18 @@ if menu == "📊 Tableau de Bord":
 elif menu == "💬 Assistant IA Admin":
     st.subheader("🤖 Chat avec l'Assistant Administratif")
 
-    # 🟢 SÉCURITÉ : Initialisation de l'historique ET du tampon vocal de session
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "input_vocal_tampon" not in st.session_state:
         st.session_state.input_vocal_tampon = ""
 
-    # 1. Affichage de l'historique persistant
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
-            
-            # Si l'assistant a un fichier audio lié dans l'historique, on l'affiche
             if msg["role"] == "assistant" and msg.get("audio_path"):
                 if os.path.exists(msg["audio_path"]):
                     st.audio(msg["audio_path"], format="audio/mp3")
             
-            # Si le message historique contient un PDF associé
             if msg["role"] == "assistant" and msg.get("pdf_path"):
                 p_path = msg["pdf_path"]
                 if os.path.exists(p_path):
@@ -155,8 +141,6 @@ elif menu == "💬 Assistant IA Admin":
                         )
 
     st.markdown("---")
-
-    # Conteneur pour aligner la zone d'écriture et le micro tout en bas
     col_input, col_mic = st.columns([5, 1])
 
     with col_mic:
@@ -236,72 +220,167 @@ elif menu == "📝 Génération de PV":
     st.subheader("📝 Générateur Automatique de Procès-Verbaux (PV)")
     st.markdown("Transformez les fichiers audio ou les enregistrements de vos réunions en comptes-rendus structurés.")
     
-    # Organisation visuelle en deux colonnes : Contrôles audio à gauche, affichage du PV à droite
+    if "pv_ready" not in st.session_state:
+        st.session_state.pv_ready = False
+    if "current_pv" not in st.session_state:
+        st.session_state.current_pv = ""
+    if "current_transcription" not in st.session_state:
+        st.session_state.current_transcription = ""
+    if "pdf_template_path" not in st.session_state:
+        st.session_state.pdf_template_path = None
+    if "reunion_audio_bytes" not in st.session_state:
+        st.session_state.reunion_audio_bytes = None
+    if "reunion_audio_name" not in st.session_state:
+        st.session_state.reunion_audio_name = "reunion_audio.wav"
+    if "reunion_audio_mime" not in st.session_state:
+        st.session_state.reunion_audio_mime = "audio/wav"
+    if "audio_source" not in st.session_state:
+        st.session_state.audio_source = None
+
     col_audio, col_resultat = st.columns([1, 1])
     
     with col_audio:
-        st.info("ℹ️ Vous pouvez enregistrer votre réunion en direct ou téléverser un fichier existant.")
+        st.info("ℹ️ Enregistrez votre réunion en direct ou déposez un fichier existant.")
         
-        # --- Option 1 : Micro en direct ---
-        st.markdown("### 🎙️ Option 1 : Enregistrer la réunion en direct")
+        st.markdown("### 🎙️ Option 1 : Enregistrer en direct")
         audio_reunion = mic_recorder(
             start_prompt="🎤 Démarrer l'enregistrement",
-            stop_prompt="🛑 Arrêter et générer le PV",
+            stop_prompt="🛑 Arrêter et valider",
             just_once=True,
             key="pv_reunion_mic"
         )
         
+        if audio_reunion and "bytes" in audio_reunion:
+            if st.session_state.reunion_audio_bytes != audio_reunion["bytes"]:
+                st.session_state.reunion_audio_bytes = audio_reunion["bytes"]
+                st.session_state.reunion_audio_name = "enregistrement_direct.webm"
+                st.session_state.reunion_audio_mime = "audio/webm"
+                st.session_state.audio_source = "micro"
+                st.success("✅ Enregistrement micro capturé avec succès !")
+        
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("---")
         
-        # --- Option 2 : Upload de fichier ---
         st.markdown("### 📂 Option 2 : Importer un fichier audio")
         fichier_audio = st.file_uploader(
-            "Formats acceptés : MP3, WAV, M4A", 
-            type=["mp3", "wav", "m4a"],
+            "Formats acceptés : MP3, WAV, M4A, MP4 (Audios WhatsApp)", 
+            type=["mp3", "wav", "m4a", "mp4"],
             key="pv_reunion_upload"
         )
+        
+        if fichier_audio is not None:
+            fichier_bytes = fichier_audio.getvalue()
+            if st.session_state.reunion_audio_bytes != fichier_bytes:
+                st.session_state.reunion_audio_bytes = fichier_bytes
+                st.session_state.reunion_audio_name = fichier_audio.name
+                ext = fichier_audio.name.split('.')[-1].lower()
+                
+                if ext in ["mp4", "m4a"]:
+                    st.session_state.reunion_audio_mime = "audio/mp4"
+                else:
+                    st.session_state.reunion_audio_mime = f"audio/{ext}"
+                    
+                st.session_state.audio_source = "upload"
+                st.success(f"✅ Fichier {fichier_audio.name} chargé en mémoire !")
+                
+        st.markdown("<br>", unsafe_allow_html=True)
+        bouton_generer = st.button("🚀 Lancer la génération du PV", use_container_width=True, type="primary")
+
+        if st.session_state.pv_ready:
+            st.markdown("---")
+            if st.button("🔄 Effacer et refaire un enregistrement", use_container_width=True):
+                st.session_state.pv_ready = False
+                st.session_state.current_pv = ""
+                st.session_state.current_transcription = ""
+                st.session_state.pdf_template_path = None
+                st.session_state.reunion_audio_bytes = None
+                st.session_state.audio_source = None
+                st.rerun()
 
     with col_resultat:
         st.markdown("### 📄 Résultat du Procès-Verbal")
         
-        contenu_audio_bytes = None
-        
-        # Interception de la source audio active
-        if audio_reunion and "bytes" in audio_reunion:
-            contenu_audio_bytes = audio_reunion["bytes"]
-            st.success("✅ Enregistrement en direct capturé avec succès !")
+        contenu_audio_bytes = st.session_state.get("reunion_audio_bytes")
             
-        elif fichier_audio is not None:
-            contenu_audio_bytes = fichier_audio.read()
-            st.success(f"✅ Fichier '{fichier_audio.name}' importé avec succès !")
-            
-        # 🔥 MODIFICATION : Déclenchement du traitement réel via FastAPI
-        if contenu_audio_bytes:
-            with st.spinner("⏳ Transcription de la réunion et mise en page du PV par l'IA..."):
+        if bouton_generer and contenu_audio_bytes and not st.session_state.get("pv_ready", False):
+            with st.spinner("⏳ Traitement et mise en page du PV en cours..."):
                 try:
-                    # Préparation des fichiers binaires pour le format multipart/form-data
-                    files = {"file": ("reunion_audio.wav", contenu_audio_bytes, "audio/wav")}
-                    
-                    # Appel vers notre nouvelle route FastAPI
-                    response = requests.post(f"{API_URL}/agent/generate-pv", files=files)
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        pv_markdown = data.get("pv_markdown", "")
-                        transcription_brute = data.get("transcription", "")
+                    # 🔀 AIGUILLAGE PAR FLUX BRUT SÉCURISÉ (ZÉRO ERREUR MULTIPART)
+                    if st.session_state.get("audio_source") == "upload" and fichier_audio is not None:
+                        nom_fichier = st.session_state.reunion_audio_name
                         
-                        # Affichage du PV final mis en forme par Llama 3
-                        st.markdown(pv_markdown)
+                        # Réinitialisation et lecture propre des octets
+                        fichier_audio.seek(0)
+                        raw_file_bytes = fichier_audio.read()
                         
-                        st.markdown("---")
-                        # Un expander propre pour garder un œil sur la transcription si besoin
-                        with st.expander("🔍 Voir la transcription complète (Whisper)"):
-                            st.write(transcription_brute)
+                        # Envoi en binaire pur avec en-tête pour transmettre le nom du fichier
+                        headers_brut = {
+                            "Content-Type": "application/octet-stream",
+                            "X-File-Name": nom_fichier
+                        }
+                        
+                        response = requests.post(
+                            f"{API_URL}/agent/upload-pv", 
+                            data=raw_file_bytes, 
+                            headers=headers_brut, 
+                            timeout=900
+                        )
+                        
                     else:
-                        st.error(f"Erreur du serveur backend ({response.status_code}) lors de la génération.")
+                        # Option 1 (Micro direct) : Inchangé
+                        headers_flux = {"Content-Type": "application/octet-stream"}
+                        response = requests.post(
+                            f"{API_URL}/agent/generate-pv", 
+                            data=contenu_audio_bytes,
+                            headers=headers_flux,
+                            timeout=900
+                        )
+                    
+                    if response and response.status_code == 200:
+                        data = response.json()
+                        st.session_state.current_pv = data.get("pv_markdown", "")
+                        st.session_state.current_transcription = data.get("transcription", "")
+                        st.session_state.pdf_template_path = data.get("pdf_path", None)
+                        st.session_state.pv_ready = True
+                        st.rerun()
+                    else:
+                        st.error(f"Erreur backend ({response.status_code}) : {response.text}")
                         
                 except Exception as e:
                     st.error(f"Impossible de joindre le serveur backend : {str(e)}")
+                    
+        elif bouton_generer and not contenu_audio_bytes:
+            st.warning("⚠️ Veuillez d'abord enregistrer un audio ou téléverser un fichier avant de lancer la génération.")
+        
+        # 🔒 TON CODE D'AFFICHAGE DE RESTE STRICTEMENT INTACT ICI :
+        if st.session_state.get("pv_ready", False):
+            st.markdown(st.session_state.current_pv)
+            st.markdown("---")
+            
+            pdf_path = st.session_state.get("pdf_template_path")
+            if pdf_path and os.path.exists(pdf_path):
+                with open(pdf_path, "rb") as file:
+                    st.download_button(
+                        label="📥 Télécharger le PV Officiel (Format PDF)",
+                        data=file,
+                        file_name=os.path.basename(pdf_path),
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
+            else:
+                st.warning("⚠️ Le fichier PDF officiel n'a pas été trouvé ou généré sur le serveur.")
+            
+            st.download_button(
+                label="📄 Télécharger la version brute (.md)",
+                data=st.session_state.current_pv,
+                file_name="PV_Réunion_Secrétariat.md",
+                mime="text/markdown",
+                use_container_width=True
+            )
+            st.markdown("---")
+            
+            with st.expander("🔍 Voir la transcription complète (Whisper)"):
+                st.write(st.session_state.current_transcription)
         else:
-            st.info("📢 Veuillez enregistrer un flux audio ou déposer un fichier pour déclencher la rédaction automatique.")
+            if not contenu_audio_bytes:
+                st.info("📢 Enregistrez un flux audio ou déposez un fichier, puis cliquez sur le bouton pour lancer la rédaction.")

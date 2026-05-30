@@ -195,3 +195,60 @@ def generate_pv(params):
 
 def send_convocation(params):
     return "Convocations envoyées"
+
+# ==========================================
+# 🟢 HISTORIQUE DES PROCÈS-VERBAUX (NOUVEAUTÉ)
+# ==========================================
+def save_meeting_to_history(date, participants, objet, details, decisions, actions, next_meeting, transcription, pdf_path):
+    """
+    Crée automatiquement la table historique_pv si nécessaire et y insère
+    le nouveau procès-verbal généré par l'IA.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # 1. Création de la table de suivi si elle n'existe pas
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS historique_pv (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT,
+            participants TEXT,
+            objet TEXT,
+            details TEXT,
+            decisions TEXT,
+            actions TEXT,
+            next_meeting TEXT,
+            transcription TEXT,
+            pdf_path TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # 2. Insertion sécurisée des données du PV
+    cursor.execute("""
+        INSERT INTO historique_pv (date, participants, objet, details, decisions, actions, next_meeting, transcription, pdf_path)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (date, participants, objet, details, decisions, actions, next_meeting, transcription, pdf_path))
+    
+    conn.commit()
+    conn.close()
+    return True
+
+def get_all_pv_history():
+    """
+    Parcourt la table historique_pv et renvoie la liste complète des PV 
+    triée du plus récent au plus ancien.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT * FROM historique_pv ORDER BY created_at DESC")
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
+    except sqlite3.OperationalError:
+        # Si la table n'a pas encore été créée (aucun PV généré), on renvoie une liste vide sans planter
+        conn.close()
+        return []

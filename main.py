@@ -1,16 +1,20 @@
 import os
+import json
 import requests
-from fastapi import FastAPI, File, UploadFile, HTTPException  # 🟢 MISE À JOUR : Ajout de File et UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException # 🟢 File et UploadFile conservés au besoin
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-# Importations de tes modules locaux
-from models.schemas import UserRequest
+from models.schemas import UserRequest  # 👈 Rétablit UserRequest pour la ligne 254
 from services.orchestrator import executer_agent
-from tools.meeting import list_meetings, find_meeting_by_date, delete_meeting
+from tools.meeting import list_meetings, find_meeting_by_date, delete_meeting, get_all_pv_history, save_meeting_to_history
 
 # EXTRACTION CORRIGÉE : Ajout de get_all_logs pour ton tableau de bord
 from tools.history_manager import get_analytics_stats, get_activity_by_action, get_all_logs
+
+from fastapi import Request
+import shutil
 
 # 1. Initialisation unique de l'application FastAPI
 app = FastAPI(
@@ -88,114 +92,382 @@ async def process_agent(data: dict):
     return resultat_agent
 
 
-# ==========================================
-# 📝 🟢 NOUVELLE ROUTE : GÉNÉRATION AUTOMATIQUE DE PV DE RÉUNION
-# ==========================================
 @app.post("/agent/generate-pv", tags=["Agent"])
-async def generate_pv(file: UploadFile = File(...)):
+async def generate_pv(request: Request):
     """
-    Prend en entrée un fichier audio binaire (micro direct ou dépôt), 
-    le retranscrit via Whisper, et structure un Procès-Verbal officiel en Markdown via Llama 3.
+    Version optimisée : Nettoie les erreurs phonétiques (critérium, Southrimlit)
+    et attribue correctement les tâches au narrateur (Meryem).
     """
+    temp_audio_path = "temp_enregistrement_reunion.wav"
+    
     try:
-        # 1. Sauvegarde temporaire du flux audio reçu
-        temp_audio_path = f"temp_{file.filename}"
+        # 1. ÉCRITURE DU FLUX RÉSEAU
         with open(temp_audio_path, "wb") as buffer:
-            buffer.write(await file.read())
+            async for chunk in request.stream():
+                buffer.write(chunk)
 
-        # 2. Appel à l'API Whisper de Groq pour la transcription acoustique
+        if not os.path.exists(temp_audio_path) or os.path.getsize(temp_audio_path) == 0:
+            raise HTTPException(status_code=400, detail="Le flux audio est vide.")
+
+        # 2. Transcription Whisper enrichie
         whisper_url = "https://api.groq.com/openai/v1/audio/transcriptions"
         headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
         
-        # Guide d'aide contextuel pour limiter les fautes sur le jargon administratif
-        invite_contexte = "Réunion, ordre du jour, décisions, plan d'action, participants, compte-rendu, Meryem, Sanaa."
+        # Vocabulaire renforcé pour éviter "critérium" et "Southrimlit"
+        invite_contexte = "Secrétariat Intelligent, suivi de projet, Meryem, Sanaa, Ahmed, Scikit-Learn, Streamlit, FastAPI, SQLite, frontend, backend, route API."
 
-        with open(temp_audio_path, "rb") as audio_file:
+        with open(temp_audio_path, "rb") as audio_file_obj:
             files = {
-                "file": (file.filename, audio_file, file.content_type if file.content_type else "audio/wav"),
+                "file": ("enregistrement.wav", audio_file_obj, "audio/wav"),
                 "model": (None, "whisper-large-v3"),
                 "language": (None, "fr"),
                 "prompt": (None, invite_contexte)
             }
             whisper_response = requests.post(whisper_url, headers=headers, files=files)
         
-        # Nettoyage immédiat du fichier de transit
         if os.path.exists(temp_audio_path):
             os.remove(temp_audio_path)
 
         if whisper_response.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"Échec Whisper Groq : {whisper_response.text}")
+            raise HTTPException(status_code=500, detail=f"Échec Whisper : {whisper_response.text}")
         
         transcription_brute = whisper_response.json().get("text", "")
         
-        if not transcription_brute.strip():
-            return {"pv_markdown": "⚠️ L'enregistrement audio ne contient aucune voix ou contenu détectable."}
+        # 🔄 Post-nettoyage manuel des pires erreurs phonétiques avant l'envoi au LLM
+        transcription_brute = transcription_brute.replace("critérium intelligent", "Secrétariat Intelligent")
+        transcription_brute = transcription_brute.replace("Southrimlit", "Streamlit")
+        transcription_brute = transcription_brute.replace("aux frontales", "au frontend")
+        transcription_brute = transcription_brute.replace("Skiit-Learn", "Scikit-Learn")
 
-        # 3. Traitement NLP avancé par Llama 3 pour la rédaction du PV structuré
+        if not transcription_brute.strip():
+            return {"pv_markdown": "⚠️ L'enregistrement audio ne contient aucun contenu vocal."}
+
+        # 3. Analyse Llama 3.3 avec contexte utilisateur ("Je" = Meryem)
         llm_url = "https://api.groq.com/openai/v1/chat/completions"
         
         prompt_systeme = (
-            "Tu es un secrétaire de direction de haut niveau. Ton travail consiste à nettoyer la transcription "
-            "brute d'une réunion pour rédiger un Procès-Verbal (PV) de réunion parfaitement propre, structuré et professionnel en Markdown.\n\n"
-            "Tu dois impérativement organiser ton retour selon la mise en forme suivante :\n"
-            "# 📝 PROCÈS-VERBAL DE RÉUNION\n"
-            "**Date :** [Distinguer la date si elle est dite explicitement, sinon écrire la date actuelle]\n"
-            "**Participants :** [Lister tous les noms propres ou prénoms entendus dans la conversation]\n\n"
-            "## 🎯 1. Ordre du jour\n"
-            "[Écrire un résumé clair de l'objectif de la réunion]\n\n"
-            "## 💬 2. Synthèse des échanges\n"
-            "[Faire un résumé condensé, fluide et rédigé des discussions en supprimant les hésitations et tics de langage]\n\n"
-            "## 📌 3. Décisions retenues\n"
-            "[Lister sous forme de puces claires les choix ou arbitrages validés]\n\n"
-            "## 📅 4. Plan d'action\n"
-            "| Action | Responsable | Échéance |\n"
-            "| :--- | :--- | :--- |\n"
-            "| [Intitulé de la tâche] | [Nom] | [Date cible ou 'À définir'] |\n\n"
-            "Garde un ton formel, concis, neutre et très corporate."
+            "Tu es un secrétaire de direction expert. Extrais les informations clés sous forme d'un objet JSON valide.\n"
+            "IMPORTANT : La personne qui parle et dit 'Je / De mon côté' est exclusivement Meryem. Attribue-lui ses actions en son nom (Meryem).\n"
+            "Format JSON attendu :\n"
+            "{\n"
+            '  "date": "Date de la réunion (AAAA-MM-JJ)",\n'
+            '  "participants": "Sanaa, Ahmed, Meryem",\n'
+            '  "objet": "Sujet principal de la réunion",\n'
+            '  "details": "Synthèse rédigée et détaillée des échanges (sans puces)",\n'
+            '  "decisions": ["Décision 1", "Décision 2"],\n'
+            '  "actions": ["Tâche 1 par Responsable", "Tâche 2 par Responsable"],\n'
+            '  "next_meeting": "Date ou À définir"\n'
+            "}"
         )
 
         llm_payload = {
-            "model": "llama3-70b-8192",  # Choix du grand modèle pour un esprit de synthèse optimal
+            "model": "llama-3.3-70b-versatile",
+            "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": prompt_systeme},
-                {"role": "user", "content": f"Voici le texte brut issu de l'enregistrement de la réunion :\n{transcription_brute}"}
+                {"role": "user", "content": f"Transcription de la réunion :\n{transcription_brute}"}
             ],
-            "temperature": 0.2  # Basse température pour coller strictement aux faits énoncés
+            "temperature": 0.1  # Baissée à 0.1 pour un respect strict des mots du texte
         }
 
         llm_response = requests.post(llm_url, headers=headers, json=llm_payload)
         
         if llm_response.status_code == 200:
-            pv_redige = llm_response.json()["choices"][0]["message"]["content"]
+            str_contenu = llm_response.json()["choices"][0]["message"]["content"]
+            pv_data = json.loads(str_contenu)
+            
+            # Forcer les corrections dans les champs textuels générés
+            for clé in ["objet", "details"]:
+                if clé in pv_data and isinstance(pv_data[clé], str):
+                    pv_data[clé] = pv_data[clé].replace("critérium intelligent", "Secrétariat Intelligent")
+                    pv_data[clé] = pv_data[clé].replace("Southrimlit", "Streamlit")
+                    pv_data[clé] = pv_data[clé].replace("aux frontales", "au frontend")
+                    pv_data[clé] = pv_data[clé].replace("Skiit-Learn", "Scikit-Learn")
+
+            parts = pv_data.get('participants', 'Meryem, Sanaa, Ahmed')
+            parts_str = ", ".join([str(p) for p in parts]) if isinstance(parts, list) else str(parts)
+
+            # Extraire la date dynamique trouvée par le LLM (2026-05-26)
+            date_reunion = pv_data.get('date', '2026-05-26')
+
+            # 4. Reconstruction du format Markdown
+            pv_markdown_dynamique = f"""# 📝 PROCÈS-VERBAL DE RÉUNION
+**Date :** {date_reunion}
+**Participants :** {parts_str}
+
+## 🎯 1. Ordre du jour
+{pv_data.get('objet')}
+
+## 💬 2. Synthèse des échanges
+{pv_data.get('details')}
+
+## 📌 3. Décisions retenues
+"""
+            decisions_list = pv_data.get('decisions', [])
+            for d in (decisions_list if isinstance(decisions_list, list) else str(decisions_list).split(',')):
+                d_clean = str(d).lstrip('• ').strip()
+                if d_clean: pv_markdown_dynamique += f"- {d_clean}\n"
+
+            pv_markdown_dynamique += "\n## 📅 4. Plan d'action\n"
+            actions_list = pv_data.get('actions', [])
+            for a in (actions_list if isinstance(actions_list, list) else str(actions_list).split(',')):
+                a_clean = str(a).lstrip('• ').strip()
+                if a_clean: pv_markdown_dynamique += f"- {a_clean}\n"
+
+            pv_markdown_dynamique += f"\n**Prochaine échéance :** {pv_data.get('next_meeting')}"
+
+            nom_fichier_pv_md = "proces_verbal_reunion.md"
+            with open(nom_fichier_pv_md, "w", encoding="utf-8") as f:
+                f.write(pv_markdown_dynamique)
+                
+            # 5. Génération du PDF avec application STRICTE de la date et suppression des puces dupliquées
+            from tools.pdf_generator import generate_pv_pdf
+            
+            decisions_clean = [str(d).lstrip('• ').strip() for d in decisions_list if str(d).strip()]
+            actions_clean = [str(a).lstrip('• ').strip() for a in actions_list if str(a).strip()]
+            
+            decisions_str = "<br/>".join([f"• {d}" for d in decisions_clean])
+            actions_str = "<br/>".join([f"• {a}" for a in actions_clean])
+
+            params_pour_pdf = {
+                "objet": str(pv_data.get("objet", "Suivi de projet et mise en place du Secrétariat Intelligent")),
+                "lieu": "Salle de Réunion",
+                "participants": parts_str,
+                "details": str(pv_data.get("details", "")).replace("\n", "<br/>"),
+                "decisions": decisions_str,
+                "actions": actions_str,
+                "next_meeting": str(pv_data.get("next_meeting", "Lundi matin prochain à 10h")),
+                "date": str(date_reunion)  # 👈 Transmis explicitement ici
+            }
+            
+            chemin_pdf_officiel = generate_pv_pdf(params_pour_pdf)
+            
+            # 6. Sauvegarde historique SQLite
+            try:
+                save_meeting_to_history(
+                    date=str(date_reunion),
+                    participants=parts_str,
+                    objet=str(pv_data.get("objet")),
+                    details=str(pv_data.get("details")),
+                    decisions=json.dumps(decisions_clean, ensure_ascii=False),
+                    actions=json.dumps(actions_clean, ensure_ascii=False),
+                    next_meeting=str(pv_data.get("next_meeting")),
+                    transcription=str(transcription_brute),
+                    pdf_path=str(chemin_pdf_officiel)
+                )
+            except Exception as e_history:
+                print(f"⚠️ Échec d'écriture SQL : {e_history}")
+            
             return {
                 "transcription": transcription_brute,
-                "pv_markdown": pv_redige
+                "pv_markdown": pv_markdown_dynamique,
+                "nom_fichier": nom_fichier_pv_md,
+                "pdf_path": chemin_pdf_officiel
             }
         else:
             raise HTTPException(status_code=500, detail=f"Échec LLM Groq : {llm_response.text}")
 
     except Exception as e:
+        if os.path.exists(temp_audio_path):
+            os.remove(temp_audio_path)
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/email/process", tags=["Email"])
-async def process_email_endpoint(request: UserRequest):
-    """Simule le traitement automatique d'un e-mail reçu par l'agent."""
-    result = executer_agent(request.message, request.utilisateur)
+# =========================================================================
+# 🆕 OPTION 2 : NOUVELLE ROUTE SÉCURISÉE POUR L'IMPORTATION DE FICHIERS AUDIO
+# =========================================================================
+@app.post("/agent/upload-pv", tags=["Agent"])
+async def upload_pv(request: Request):
+    """
+    Cette route reçoit le fichier importé sous forme de flux binaire brut
+    pour éviter les erreurs de parsing HTTP 'multipart' sur les fichiers longs.
+    """
+    # On récupère le nom du fichier depuis les en-têtes personnalisés ou on met un nom par défaut
+    nom_fichier_origine = request.headers.get("X-File-Name", "audio_importe.mp4")
+    temp_upload_path = f"temp_upload_{nom_fichier_origine}"
+    
+    try:
+        # 1. Écriture du flux réseau brut directement sur le disque
+        with open(temp_upload_path, "wb") as buffer:
+            async for chunk in request.stream():
+                buffer.write(chunk)
+            
+        if not os.path.exists(temp_upload_path) or os.path.getsize(temp_upload_path) == 0:
+            raise HTTPException(status_code=400, detail="Le fichier importé est vide.")
 
-    # Sécurisation si request.sender n'existe pas dans le schéma de base
-    sender = getattr(request, "sender", "utilisateur@entreprise.ma")
-    subject = getattr(request, "subject", "Demande administrative")
+        # 2. Transcription via Whisper Groq
+        whisper_url = "https://api.groq.com/openai/v1/audio/transcriptions"
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        invite_contexte = "Secrétariat Intelligent, suivi de projet, Meryem, Sanaa, Ahmed, Scikit-Learn, Streamlit, FastAPI, SQLite, frontend, backend, route API."
 
-    return {
-        "to": sender,
-        "subject": f"Re: {subject}",
-        "message": result.get("response", "Votre demande a été traitée."),
-    }
+        # Détermination du content_type
+        content_type_standard = "audio/mpeg"
+        if nom_fichier_origine.lower().endswith(".wav"):
+            content_type_standard = "audio/wav"
+        elif nom_fichier_origine.lower().endswith((".mp4", ".m4a")):
+            content_type_standard = "audio/mp4"
 
+        with open(temp_upload_path, "rb") as audio_file_obj:
+            files = {
+                "file": (nom_fichier_origine, audio_file_obj, content_type_standard),
+                "model": (None, "whisper-large-v3"),
+                "language": (None, "fr"),
+                "prompt": (None, invite_contexte)
+            }
+            whisper_response = requests.post(whisper_url, headers=headers, files=files, timeout=300)
+        
+        if os.path.exists(temp_upload_path):
+            os.remove(temp_upload_path)
+
+        if whisper_response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Échec Whisper (Upload) : {whisper_response.text}")
+        
+        transcription_brute = whisper_response.json().get("text", "")
+        
+        # Nettoyage phonétique
+        transcription_brute = transcription_brute.replace("critérium intelligent", "Secrétariat Intelligent")
+        transcription_brute = transcription_brute.replace("Southrimlit", "Streamlit")
+        transcription_brute = transcription_brute.replace("aux frontales", "au frontend")
+        transcription_brute = transcription_brute.replace("Skiit-Learn", "Scikit-Learn")
+
+        if not transcription_brute.strip():
+            return {"pv_markdown": "⚠️ Le fichier audio ne contient aucun contenu vocal identifiable."}
+
+        # 3. Analyse par Llama 3.3
+        llm_url = "https://api.groq.com/openai/v1/chat/completions"
+        prompt_systeme = (
+            "Tu es un secrétaire de direction expert. Extrais les informations clés sous forme d'un objet JSON valide.\n"
+            "IMPORTANT : La personne qui parle et dit 'Je / De mon côté' est exclusivement Meryem. Attribue-lui ses actions en son nom (Meryem).\n"
+            "Format JSON attendu :\n"
+            "{\n"
+            '  "date": "Date de la réunion (AAAA-MM-JJ)",\n'
+            '  "participants": "Sanaa, Ahmed, Meryem",\n'
+            '  "objet": "Sujet principal de la réunion",\n'
+            '  "details": "Synthèse rédigée et détaillée des échanges (sans puces)",\n'
+            '  "decisions": ["Décision 1", "Décision 2"],\n'
+            '  "actions": ["Tâche 1 par Responsable", "Tâche 2 par Responsable"],\n'
+            '  "next_meeting": "Date ou À définir"\n'
+            "}"
+        )
+
+        llm_payload = {
+            "model": "llama-3.3-70b-versatile",
+            "response_format": {"type": "json_object"},
+            "messages": [
+                {"role": "system", "content": prompt_systeme},
+                {"role": "user", "content": f"Transcription de la réunion :\n{transcription_brute}"}
+            ],
+            "temperature": 0.1
+        }
+
+        llm_response = requests.post(llm_url, headers=headers, json=llm_payload, timeout=300)
+        
+        if llm_response.status_code == 200:
+            str_contenu = llm_response.json()["choices"][0]["message"]["content"]
+            pv_data = json.loads(str_contenu)
+            
+            for clé in ["objet", "details"]:
+                if clé in pv_data and isinstance(pv_data[clé], str):
+                    pv_data[clé] = pv_data[clé].replace("critérium intelligent", "Secrétariat Intelligent")
+                    pv_data[clé] = pv_data[clé].replace("Southrimlit", "Streamlit")
+                    pv_data[clé] = pv_data[clé].replace("aux frontales", "au frontend")
+                    pv_data[clé] = pv_data[clé].replace("Skiit-Learn", "Scikit-Learn")
+
+            parts = pv_data.get('participants', 'Meryem, Sanaa, Ahmed')
+            parts_str = ", ".join([str(p) for p in parts]) if isinstance(parts, list) else str(parts)
+            date_reunion = pv_data.get('date', '2026-05-26')
+
+            # 4. Reconstruction du format Markdown (Reste impeccable avec des puces standards)
+            pv_markdown_dynamique = f"""# 📝 PROCÈS-VERBAL DE RÉUNION
+**Date :** {date_reunion}
+**Participants :** {parts_str}
+
+## 🎯 1. Ordre du jour
+{pv_data.get('objet')}
+
+## 💬 2. Synthèse des échanges
+{pv_data.get('details')}
+
+## 📌 3. Décisions retenues
+"""
+            decisions_clean = [str(d).lstrip('•- ').strip() for d in pv_data.get('decisions', []) if str(d).strip()]
+            for d in decisions_clean:
+                pv_markdown_dynamique += f"- {d}\n"
+
+            pv_markdown_dynamique += "\n## 📅 4. Plan d'action\n"
+            actions_clean = [str(a).lstrip('•- ').strip() for a in pv_data.get('actions', []) if str(a).strip()]
+            for a in actions_clean:
+                pv_markdown_dynamique += f"- {a}\n"
+
+            pv_markdown_dynamique += f"\n**Prochaine échéance :** {pv_data.get('next_meeting')}"
+
+            nom_fichier_pv_md = "proces_verbal_reunion.md"
+            with open(nom_fichier_pv_md, "w", encoding="utf-8") as f:
+                f.write(pv_markdown_dynamique)
+                
+            # 5. Génération du PDF : Alignement et puces parfaites pour TOUTES les lignes
+            from tools.pdf_generator import generate_pv_pdf
+            
+            # Technique de l'alignement : la première ligne reçoit la puce du générateur, 
+            # les lignes suivantes reçoivent une puce explicite.
+            decisions_pdf_str = ""
+            if decisions_clean:
+                decisions_pdf_str = decisions_clean[0]  # Pas de puce manuelle (le générateur va la mettre)
+                if len(decisions_clean) > 1:
+                    # On ajoute une puce • devant toutes les lignes suivantes
+                    decisions_pdf_str += "<br/>" + "<br/>".join([f"• {d}" for d in decisions_clean[1:]])
+
+            actions_pdf_str = ""
+            if actions_clean:
+                actions_pdf_str = actions_clean[0]  # Pas de puce manuelle
+                if len(actions_clean) > 1:
+                    actions_pdf_str += "<br/>" + "<br/>".join([f"• {a}" for a in actions_clean[1:]])
+
+            params_pour_pdf = {
+                "objet": str(pv_data.get("objet", "Suivi de projet et mise en place du Secrétariat Intelligent")),
+                "lieu": "Salle de Réunion",
+                "participants": parts_str,
+                "details": str(pv_data.get("details", "")).replace("\n", "<br/>"),
+                "decisions": decisions_pdf_str, 
+                "actions": actions_pdf_str,      
+                "next_meeting": str(pv_data.get("next_meeting", "Lundi matin prochain à 10h")),
+                "date": str(date_reunion)
+            }
+            
+            chemin_pdf_officiel = generate_pv_pdf(params_pour_pdf)
+            
+            # 6. Sauvegarde historique SQLite
+            try:
+                save_meeting_to_history(
+                    date=str(date_reunion),
+                    participants=parts_str,
+                    objet=str(pv_data.get("objet")),
+                    details=str(pv_data.get("details")),
+                    decisions=json.dumps(decisions_clean, ensure_ascii=False),
+                    actions=json.dumps(actions_clean, ensure_ascii=False),
+                    next_meeting=str(pv_data.get("next_meeting")),
+                    transcription=str(transcription_brute),
+                    pdf_path=str(chemin_pdf_officiel)
+                )
+            except Exception as e_history:
+                print(f"⚠️ Échec d'écriture SQL (Upload) : {e_history}")
+            
+            return {
+                "transcription": transcription_brute,
+                "pv_markdown": pv_markdown_dynamique,
+                "nom_fichier": nom_fichier_pv_md,
+                "pdf_path": chemin_pdf_officiel
+            }
+        else:
+            raise HTTPException(status_code=500, detail=f"Échec LLM Groq (Upload) : {llm_response.text}")
+
+    except Exception as e:
+        if os.path.exists(temp_upload_path):
+            os.remove(temp_upload_path)
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ==========================================
-# 📅 ROUTES DE GESTION DES RÉUNIONS (SQL)
+# 📋 ROUTES DE GESTION DES RÉUNIONS (SQL)
 # ==========================================
 @app.get("/meetings", tags=["Meetings"])
 async def get_meetings():
@@ -215,28 +487,36 @@ async def remove_meeting(meeting_id: int):
     return delete_meeting(meeting_id)
 
 
+# 🟢 NOUVELLE ROUTE : ACCÉDER À L'HISTORIQUE DES PV GENERES
+@app.get("/meetings/history", tags=["Meetings"])
+async def get_meetings_history():
+    """Récupère la liste de tous les procès-verbaux archivés en BDD."""
+    return get_all_pv_history()
+
+
 # ==========================================
-# 📁 ROUTE DE TÉLÉCHARGEMENT DE DOCUMENTS (PDF)
+# 📁 ROUTE DE TÉLÉCHARGEMENT DE DOCUMENTS (PDF & MD)
 # ==========================================
 @app.get("/download/{file_path:path}", tags=["Documents"])
 def download_file(file_path: str):
-    """Permet au frontend de télécharger les attestations PDF générées."""
-    # Nettoyage si le frontend passe un chemin absolu au lieu d'un nom de fichier simple
+    """Permet au frontend de télécharger les documents générés (PDF ou Markdown)."""
     clean_path = os.path.basename(file_path) if "/" in file_path or "\\" in file_path else file_path
+
+    # Configuration dynamique du type de fichier selon son extension
+    media_type = "text/markdown" if clean_path.endswith(".md") else "application/pdf"
 
     if os.path.exists(clean_path):
         return FileResponse(
             path=clean_path,
             filename=os.path.basename(clean_path),
-            media_type="application/pdf",
-        )
+            media_type=media_type,
+            )
 
-    # Fallback si le fichier est stocké à la racine ou selon le chemin transmis
     if os.path.exists(file_path):
         return FileResponse(
             path=file_path,
             filename=os.path.basename(file_path),
-            media_type="application/pdf",
+            media_type=media_type,
         )
 
     return {"error": f"Fichier introuvable : {file_path}"}

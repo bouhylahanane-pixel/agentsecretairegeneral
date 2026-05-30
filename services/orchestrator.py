@@ -4,6 +4,9 @@ import time  # Pour mesurer précisément le temps de réponse
 from datetime import datetime
 import sqlite3
 
+from dotenv import load_dotenv
+load_dotenv()
+
 nest_asyncio.apply()
 from agent.brain import agent_decision
 
