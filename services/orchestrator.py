@@ -7,7 +7,7 @@ import sqlite3
 from dotenv import load_dotenv
 load_dotenv()
 
-nest_asyncio.apply()
+# nest_asyncio.apply()  # Désactivé car incompatible avec uvicorn sous Python 3.14
 from agent.brain import agent_decision
 
 from tools.meeting import (

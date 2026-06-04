@@ -44,7 +44,7 @@ def load_meetings():
             "date": row["date"],
             "heure": row["heure_debut"],
             "heure_fin": row["heure_fin"],
-            "lieu": row.get("lieu", "") if "lieu" in row.keys() else ""
+            "lieu": row["lieu"] if "lieu" in row.keys() else ""
         })
     return meetings
 

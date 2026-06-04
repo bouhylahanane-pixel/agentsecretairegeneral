@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.45);
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel-heavy {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-input:focus {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+  outline: none;
+}
+
+/* Subtle Micro-Animations */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.99); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 5s infinite ease-in-out;
+}
+
+/* Custom Markdown Rendering in Dark Mode */
+.markdown-body h1 {
+  @apply text-xl font-extrabold text-indigo-400 mt-6 mb-4 pb-2 border-b border-slate-800/80;
+}
+.markdown-body h2 {
+  @apply text-lg font-bold text-indigo-300 mt-5 mb-3;
+}
+.markdown-body h3 {
+  @apply text-base font-semibold text-purple-400 mt-4 mb-2;
+}
+.markdown-body p {
+  @apply text-sm text-slate-300 leading-relaxed mb-3.5;
+}
+.markdown-body ul {
+  @apply list-disc pl-5 space-y-1.5 mb-4 text-slate-300 text-sm;
+}
+.markdown-body ol {
+  @apply list-decimal pl-5 space-y-1.5 mb-4 text-slate-300 text-sm;
+}
+.markdown-body li {
+  @apply leading-relaxed;
+}
+.markdown-body strong {
+  @apply font-bold text-white;
+}
+.markdown-body pre {
+  @apply bg-slate-950/80 p-4 rounded-xl border border-slate-800/60 overflow-x-auto my-4 text-xs font-mono text-slate-300;
+}
+.markdown-body code {
+  @apply bg-slate-900 px-1.5 py-0.5 rounded text-xs font-mono text-purple-300;
+}
+.markdown-body blockquote {
+  @apply pl-4 border-l-4 border-indigo-500 italic text-slate-400 my-4;
+}
