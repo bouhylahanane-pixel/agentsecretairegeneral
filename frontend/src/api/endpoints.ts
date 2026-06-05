@@ -17,26 +17,11 @@ export const api = {
   processMessage: (text: string, user: string) =>
     client.post<AgentResponse>('/agent/process', { message: text, utilisateur: user }),
 
+  // --- Génération de Documents (Attestations, Convocations) ---
+  generateDocument: (payload: { type: string; nom: string; details?: string; optimiser_ia?: boolean }) =>
+    client.post<{ pdf_path: string; message: string }>('/api/documents/generate', payload),
+
   // --- Génération de PV & Traitement Audio ---
-  uploadPVFile: (file: File) => {
-    // Le backend attend un flux binaire brut avec le nom du fichier en en-tête
-    return axios.post<PVResult>(`${API_BASE_URL}/agent/upload-pv`, file, {
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'X-File-Name': file.name,
-      },
-      timeout: 900000,
-    });
-  },
-
-  generatePVFromMic: (audioBlob: Blob) => {
-    // Le backend attend un flux binaire brut
-    return axios.post<PVResult>(`${API_BASE_URL}/agent/generate-pv`, audioBlob, {
-      headers: { 'Content-Type': 'application/octet-stream' },
-      timeout: 900000,
-    });
-  },
-
   transcribeAudio: (audioBlob: Blob) => {
     return axios.post<{ text: string }>(`${API_BASE_URL}/agent/transcribe`, audioBlob, {
       headers: { 'Content-Type': 'application/octet-stream' },
@@ -67,8 +52,8 @@ export const api = {
   // --- Arborescence Instances (Comités → Réunions) ---
   getInstancesTree: () => client.get<InstanceTree>('/api/instances'),
 
-  createCommittee: (nom: string, description?: string) =>
-    client.post('/api/instances', { type: 'comite', nom, description: description ?? '' }),
+  createCommittee: (nom: string, description?: string, membres?: string) =>
+    client.post('/api/instances', { type: 'comite', nom, description: description ?? '', membres: membres ?? '' }),
 
   createInstanceMeeting: (
     committeeId: string,
@@ -86,10 +71,21 @@ export const api = {
       },
     }),
 
+  deleteInstanceMeeting: (committeeId: string, meetingId: string) =>
+    client.delete(`/api/instances/${committeeId}/meetings/${meetingId}`),
+
   // --- Tableau de Bord / Analytics ---
   getStats: () => client.get<AnalyticsStats>('/analytics/stats'),
   getLogs: () => client.get<ActivityLog[]>('/analytics/logs'),
   getChartData: () => client.get<Record<string, number>>('/analytics/chart'),
+  getDemandes: async () => {
+    const res = await client.get('/api/demandes');
+    return res.data;
+  },
+  getNotifications: async () => {
+    const res = await client.get('/api/notifications');
+    return res.data;
+  },
 
   // --- Planning & Gestion des Réunions ---
   getMeetings: async (): Promise<Meeting[]> => {

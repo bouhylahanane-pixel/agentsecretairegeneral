@@ -92,17 +92,17 @@ export default function DocumentSafeAndLogsPage() {
   );
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-100 font-sans">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
       
       {/* Tabbed view triggers */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 transition-colors duration-300">
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('safe')}
             className={`pb-3 text-xs font-black uppercase tracking-widest transition-all ${
               activeTab === 'safe'
-                ? 'border-b-2 border-indigo-500 text-white font-black'
-                : 'text-slate-500 hover:text-slate-350'
+                ? 'border-b-2 border-indigo-600 dark:border-indigo-500 text-slate-900 dark:text-white font-black'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-350'
             }`}
           >
             🔒 Coffre-fort Numérique
@@ -112,8 +112,8 @@ export default function DocumentSafeAndLogsPage() {
             onClick={() => setActiveTab('logs')}
             className={`pb-3 text-xs font-black uppercase tracking-widest transition-all ${
               activeTab === 'logs'
-                ? 'border-b-2 border-indigo-500 text-white font-black'
-                : 'text-slate-500 hover:text-slate-350'
+                ? 'border-b-2 border-indigo-600 dark:border-indigo-500 text-slate-900 dark:text-white font-black'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-350'
             }`}
           >
             📋 Audit Trail & Logs
@@ -128,30 +128,30 @@ export default function DocumentSafeAndLogsPage() {
           {/* Header row */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
-                <FolderLock className="w-5 h-5 text-indigo-400" />
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors duration-300">
+                <FolderLock className="w-5 h-5 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
                 Document Safe (Coffre-fort Sécurisé)
               </h2>
-              <p className="text-[11px] text-slate-450 font-semibold mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-slate-450 font-semibold mt-0.5 transition-colors duration-300">
                 Archivage légal des PV du Conseil d'Administration et documents officiels chiffrés.
               </p>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 rounded-xl px-3 py-1.5 focus-within:border-indigo-550 transition-all flex-1 sm:flex-initial">
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 dark:focus-within:border-indigo-550 transition-all flex-1 sm:flex-initial">
                 <Search className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 <input
                   type="text"
                   placeholder="Rechercher PV..."
                   value={safeSearch}
                   onChange={(e) => setSafeSearch(e.target.value)}
-                  className="bg-transparent text-xs text-slate-300 outline-none w-full sm:w-48"
+                  className="bg-transparent text-xs text-slate-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 outline-none w-full sm:w-48 transition-colors duration-300"
                 />
               </div>
 
               <button
                 onClick={handleRefreshSafe}
-                className="p-2 border border-slate-850 bg-slate-900/60 hover:bg-slate-850 text-slate-400 rounded-xl active:scale-95 transition-all"
+                className="p-2 border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-400 rounded-xl active:scale-95 transition-all shadow-sm"
                 title="Actualiser Coffre-fort"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -161,49 +161,49 @@ export default function DocumentSafeAndLogsPage() {
 
           {/* Metrics summary widgets */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div className="p-4 bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-lg flex items-center gap-3.5">
-              <div className="p-2.5 bg-indigo-950/40 border border-indigo-500/20 text-indigo-400 rounded-xl">
+            <div className="p-4 bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm dark:shadow-lg flex items-center gap-3.5 transition-colors duration-300">
+              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl transition-colors duration-300">
                 <FolderLock className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Volume Chiffré</p>
-                <h4 className="text-xs font-black text-slate-200 mt-0.5">{history.length} Documents Officiels</h4>
+                <p className="text-[9px] uppercase font-bold text-slate-500 tracking-wider transition-colors duration-300">Volume Chiffré</p>
+                <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mt-0.5 transition-colors duration-300">{history.length} Documents Officiels</h4>
               </div>
             </div>
             
-            <div className="p-4 bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-lg flex items-center gap-3.5">
-              <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/20 text-emerald-450 rounded-xl">
+            <div className="p-4 bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm dark:shadow-lg flex items-center gap-3.5 transition-colors duration-300">
+              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-450 rounded-xl transition-colors duration-300">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Sécurité d'Archivage</p>
-                <h4 className="text-xs font-black text-emerald-400 mt-0.5">AES-256 Chiffré</h4>
+                <p className="text-[9px] uppercase font-bold text-slate-500 tracking-wider transition-colors duration-300">Sécurité d'Archivage</p>
+                <h4 className="text-xs font-black text-emerald-600 dark:text-emerald-400 mt-0.5 transition-colors duration-300">AES-256 Chiffré</h4>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-lg flex items-center gap-3.5">
-              <div className="p-2.5 bg-purple-950/40 border border-purple-500/20 text-purple-400 rounded-xl">
+            <div className="p-4 bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm dark:shadow-lg flex items-center gap-3.5 transition-colors duration-300">
+              <div className="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 text-purple-600 dark:text-purple-400 rounded-xl transition-colors duration-300">
                 <Eye className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Clôture Juridique</p>
-                <h4 className="text-xs font-black text-slate-200 mt-0.5">Clé Publique PGP Active</h4>
+                <p className="text-[9px] uppercase font-bold text-slate-500 tracking-wider transition-colors duration-300">Clôture Juridique</p>
+                <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mt-0.5 transition-colors duration-300">Clé Publique PGP Active</h4>
               </div>
             </div>
           </div>
 
           {/* Secure vault list */}
           {safeLoading ? (
-            <div className="h-60 w-full flex flex-col items-center justify-center gap-2 bg-slate-900/10 border border-slate-800/80 rounded-2xl">
-              <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
-              <p className="text-xs text-slate-450 font-bold animate-pulse uppercase tracking-wider">Chargement du coffre-fort...</p>
+            <div className="h-60 w-full flex flex-col items-center justify-center gap-2 bg-slate-50 dark:bg-slate-900/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl transition-colors duration-300">
+              <Loader2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-spin" />
+              <p className="text-xs text-slate-500 dark:text-slate-450 font-bold animate-pulse uppercase tracking-wider">Chargement du coffre-fort...</p>
             </div>
           ) : (
-            <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-850 bg-slate-950/20 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                    <tr className="border-b border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-950/20 text-[10px] uppercase tracking-wider text-slate-500 font-bold transition-colors duration-300">
                       <th className="py-4 pl-4">Nom du Document</th>
                       <th className="py-4">Sujet Principal</th>
                       <th className="py-4">Date de Séance</th>
@@ -212,10 +212,10 @@ export default function DocumentSafeAndLogsPage() {
                       <th className="py-4 text-right pr-4">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-850">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-850 transition-colors duration-300">
                     {filteredHistory.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-slate-500 italic">
+                        <td colSpan={6} className="py-8 text-center text-slate-500 italic transition-colors duration-300">
                           Aucun procès-verbal officiel stocké.
                         </td>
                       </tr>
@@ -225,27 +225,27 @@ export default function DocumentSafeAndLogsPage() {
                         const isSecret = h.objet.toLowerCase().includes('comité') || h.objet.toLowerCase().includes('budget');
                         
                         return (
-                          <tr key={h.id} className="hover:bg-slate-900/20 transition-colors">
-                            <td className="py-3.5 pl-4 font-bold text-slate-250 flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                          <tr key={h.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/20 transition-colors duration-300">
+                            <td className="py-3.5 pl-4 font-bold text-slate-800 dark:text-slate-250 flex items-center gap-2 transition-colors duration-300">
+                              <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 transition-colors duration-300" />
                               <span>PV_Conseil_{h.date}.pdf</span>
                             </td>
-                            <td className="py-3.5 text-slate-400 max-w-xs truncate font-medium">
+                            <td className="py-3.5 text-slate-600 dark:text-slate-400 max-w-xs truncate font-medium transition-colors duration-300">
                               {h.objet}
                             </td>
-                            <td className="py-3.5 font-mono text-[10px] text-slate-500 font-bold">
+                            <td className="py-3.5 font-mono text-[10px] text-slate-500 font-bold transition-colors duration-300">
                               {h.date}
                             </td>
                             <td className="py-3.5">
-                              <span className={`px-2.5 py-0.5 text-[9px] font-black rounded-full border ${
+                              <span className={`px-2.5 py-0.5 text-[9px] font-black rounded-full border transition-colors duration-300 ${
                                 isSecret 
-                                  ? 'bg-rose-950/40 border-rose-500/20 text-rose-400' 
-                                  : 'bg-emerald-950/40 border-emerald-500/20 text-emerald-450'
+                                  ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400' 
+                                  : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-450'
                               }`}>
                                 {isSecret ? 'SECRET CONSEIL' : 'CONFIDENTIEL'}
                               </span>
                             </td>
-                            <td className="py-3.5 text-slate-500 font-mono text-[10px]">
+                            <td className="py-3.5 text-slate-500 font-mono text-[10px] transition-colors duration-300">
                               1.4 MB / PDF (ReportLab)
                             </td>
                             <td className="py-3.5 text-right pr-4">
@@ -253,9 +253,9 @@ export default function DocumentSafeAndLogsPage() {
                                 href={getDownloadUrl(filePath)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-950/40 hover:bg-indigo-950/70 border border-indigo-500/20 text-indigo-400 rounded-xl transition-all active:scale-95"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl transition-all active:scale-95"
                               >
-                                <Download className="w-3.5 h-3.5 text-indigo-400" />
+                                <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
                                 Télécharger
                               </a>
                             </td>
@@ -270,10 +270,10 @@ export default function DocumentSafeAndLogsPage() {
           )}
 
           {/* Safety disclaimer */}
-          <div className="p-4 bg-amber-950/15 border border-amber-500/10 rounded-2xl flex gap-3 text-xs text-slate-450 items-start">
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/15 border border-amber-200 dark:border-amber-500/10 rounded-2xl flex gap-3 text-xs text-slate-600 dark:text-slate-450 items-start transition-colors duration-300">
             <AlertCircle className="w-4.5 h-4.5 text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-slate-350">Règle de sécurité de l'archivage :</strong> Les procès-verbaux d'instances stockés dans ce coffre-fort disposent d'une valeur légale probante. Tout accès ou téléchargement est tracé nominativement dans le journal d'audit général à des fins de conformité réglementaire.
+              <strong className="text-slate-800 dark:text-slate-350 transition-colors duration-300">Règle de sécurité de l'archivage :</strong> Les procès-verbaux d'instances stockés dans ce coffre-fort disposent d'une valeur légale probante. Tout accès ou téléchargement est tracé nominativement dans le journal d'audit général à des fins de conformité réglementaire.
             </div>
           </div>
 
@@ -287,30 +287,30 @@ export default function DocumentSafeAndLogsPage() {
           {/* Header row */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-indigo-400" />
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors duration-300">
+                <Terminal className="w-5 h-5 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
                 Audit Trail & Logs Système
               </h2>
-              <p className="text-[11px] text-slate-450 font-semibold mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-slate-450 font-semibold mt-0.5 transition-colors duration-300">
                 Traçabilité totale des sessions JWT, des requêtes SQLAlchemy BDD et des tâches d'agent.
               </p>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 rounded-xl px-3 py-1.5 focus-within:border-indigo-550 transition-all flex-1 sm:flex-initial">
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 dark:focus-within:border-indigo-550 transition-all flex-1 sm:flex-initial">
                 <Search className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 <input
                   type="text"
                   placeholder="Rechercher action..."
                   value={logsSearch}
                   onChange={(e) => setLogsSearch(e.target.value)}
-                  className="bg-transparent text-xs text-slate-300 outline-none w-full sm:w-48"
+                  className="bg-transparent text-xs text-slate-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 outline-none w-full sm:w-48 transition-colors duration-300"
                 />
               </div>
 
               <button
                 onClick={handleRefreshLogs}
-                className="p-2 border border-slate-850 bg-slate-900/60 hover:bg-slate-850 text-slate-400 rounded-xl active:scale-95 transition-all"
+                className="p-2 border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-400 rounded-xl active:scale-95 transition-all shadow-sm"
                 title="Actualiser Journal"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -320,16 +320,16 @@ export default function DocumentSafeAndLogsPage() {
 
           {/* Logs table list */}
           {logsLoading ? (
-            <div className="h-60 w-full flex flex-col items-center justify-center gap-2 bg-slate-900/10 border border-slate-800/80 rounded-2xl">
-              <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
-              <p className="text-xs text-slate-455 font-bold animate-pulse uppercase tracking-wider">Chargement du journal d'audit...</p>
+            <div className="h-60 w-full flex flex-col items-center justify-center gap-2 bg-slate-50 dark:bg-slate-900/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl transition-colors duration-300">
+              <Loader2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-spin" />
+              <p className="text-xs text-slate-500 dark:text-slate-455 font-bold animate-pulse uppercase tracking-wider">Chargement du journal d'audit...</p>
             </div>
           ) : (
-            <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-850 bg-slate-950/20 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                    <tr className="border-b border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-950/20 text-[10px] uppercase tracking-wider text-slate-500 font-bold transition-colors duration-300">
                       <th className="py-4 pl-4">Horodatage</th>
                       <th className="py-4">Utilisateur / Agent</th>
                       <th className="py-4">Action d'Audit Effectuée</th>
@@ -339,10 +339,10 @@ export default function DocumentSafeAndLogsPage() {
                       <th className="py-4 text-center pr-4">Statut Trace</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-850">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-850 transition-colors duration-300">
                     {filteredLogs.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-slate-500 italic">
+                        <td colSpan={7} className="py-8 text-center text-slate-500 italic transition-colors duration-300">
                           Aucune trace d'audit enregistrée en base SQLite.
                         </td>
                       </tr>
@@ -362,42 +362,42 @@ export default function DocumentSafeAndLogsPage() {
                         const isSuccess = execTime < 8000;
 
                         return (
-                          <tr key={log.id} className="hover:bg-slate-900/20 transition-colors">
-                            <td className="py-3.5 pl-4 font-mono text-[10px] text-slate-500 font-bold">
+                          <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/20 transition-colors duration-300">
+                            <td className="py-3.5 pl-4 font-mono text-[10px] text-slate-500 font-bold transition-colors duration-300">
                               {log.timestamp}
                             </td>
-                            <td className="py-3.5 font-bold text-slate-350">
+                            <td className="py-3.5 font-bold text-slate-800 dark:text-slate-350 transition-colors duration-300">
                               {log.utilisateur}
                             </td>
-                            <td className="py-3.5 text-slate-300 font-medium">
-                              <code className="bg-slate-950/70 border border-slate-850 px-2 py-0.5 rounded text-[10px] font-mono text-slate-400">
+                            <td className="py-3.5 text-slate-700 dark:text-slate-300 font-medium transition-colors duration-300">
+                              <code className="bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-850 px-2 py-0.5 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 transition-colors duration-300">
                                 {log.action}
                               </code>
                             </td>
-                            <td className="py-3.5 text-slate-500 font-bold font-mono text-[9px] uppercase tracking-wide">
+                            <td className="py-3.5 text-slate-500 font-bold font-mono text-[9px] uppercase tracking-wide transition-colors duration-300">
                               {engine}
                             </td>
-                            <td className="py-3.5 font-mono text-slate-400 text-[10px]">
+                            <td className="py-3.5 font-mono text-slate-600 dark:text-slate-400 text-[10px] transition-colors duration-300">
                               {execTime} ms
                             </td>
                             <td className="py-3.5">
-                              <span className={`px-2.5 py-0.5 text-[9px] rounded-full border font-bold ${
+                              <span className={`px-2.5 py-0.5 text-[9px] rounded-full border font-bold transition-colors duration-300 ${
                                 log.priorite === 'Haute'
-                                  ? 'bg-rose-950/40 border-rose-500/20 text-rose-400'
+                                  ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400'
                                   : log.priorite === 'Moyenne'
-                                  ? 'bg-amber-950/40 border-amber-500/25 text-amber-450'
-                                  : 'bg-slate-950/40 border-slate-805 text-slate-400'
+                                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/25 text-amber-600 dark:text-amber-450'
+                                  : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-805 text-slate-600 dark:text-slate-400'
                               }`}>
                                 {log.priorite}
                               </span>
                             </td>
                             <td className="py-3.5 text-center pr-4">
-                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black ${
+                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black transition-colors duration-300 ${
                                 isSuccess
-                                  ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-450'
-                                  : 'bg-rose-950/40 border border-rose-500/20 text-rose-400'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-450'
+                                  : 'bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400'
                               }`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                                <span className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
                                 {isSuccess ? 'SUCCESS' : 'WARNING'}
                               </span>
                             </td>
@@ -412,10 +412,10 @@ export default function DocumentSafeAndLogsPage() {
           )}
 
           {/* Audit disclaimer */}
-          <div className="p-4 bg-slate-900/20 border border-slate-850 rounded-2xl flex gap-3 text-xs text-slate-500 items-start">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 rounded-2xl flex gap-3 text-xs text-slate-600 dark:text-slate-500 items-start transition-colors duration-300">
             <AlertCircle className="w-4.5 h-4.5 text-slate-500 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-slate-400">Norme de conformité ISO/IEC 27001 :</strong> Toutes les requêtes d'administration sont authentifiées à l'aide de jetons de session cryptographiques. Les transactions de modifications sur la base de données SQLite sont isolées et auditées en temps réel par les déclencheurs SQL du secrétaire.
+              <strong className="text-slate-800 dark:text-slate-400 transition-colors duration-300">Norme de conformité ISO/IEC 27001 :</strong> Toutes les requêtes d'administration sont authentifiées à l'aide de jetons de session cryptographiques. Les transactions de modifications sur la base de données SQLite sont isolées et auditées en temps réel par les déclencheurs SQL du secrétaire.
             </div>
           </div>
 

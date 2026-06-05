@@ -9,13 +9,13 @@ export default function ActionChart({ data }: ActionChartProps) {
   const colors = ['#6366f1', '#f43f5e', '#10b981', '#a855f7'];
 
   return (
-    <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg h-80">
-      <h3 className="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-4">
+    <div className="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg h-80 transition-colors duration-300">
+      <h3 className="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-4 transition-colors duration-300">
         Volume de production par type d'acte
       </h3>
       <div className="h-64 w-full">
         {data.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-xs text-slate-500 italic">
+          <div className="h-full flex items-center justify-center text-xs text-slate-500 italic transition-colors duration-300">
             Aucune donnée d'activité disponible
           </div>
         ) : (

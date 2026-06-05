@@ -15,7 +15,9 @@ import {
   FileCheck,
   AlertCircle,
   Sparkles,
-  MailCheck
+  MailCheck,
+  Loader2,
+  X
 } from 'lucide-react';
 import { api } from '../api/endpoints';
 import { useApiError } from '../contexts/ApiErrorContext';
@@ -32,6 +34,7 @@ export default function MeetingsPage() {
   const [showCommitteeModal, setShowCommitteeModal] = useState(false);
   const [newCommitteeName, setNewCommitteeName] = useState('');
   const [newCommitteeDesc, setNewCommitteeDesc] = useState('');
+  const [newCommitteeMembres, setNewCommitteeMembres] = useState('');
   const [committeeSubmitting, setCommitteeSubmitting] = useState(false);
 
   // Ajouter Réunion form state
@@ -86,9 +89,10 @@ export default function MeetingsPage() {
 
     setCommitteeSubmitting(true);
     try {
-      await api.createCommittee(newCommitteeName, newCommitteeDesc);
+      await api.createCommittee(newCommitteeName, newCommitteeDesc, newCommitteeMembres);
       setNewCommitteeName('');
       setNewCommitteeDesc('');
+      setNewCommitteeMembres('');
       setShowCommitteeModal(false);
       await loadInstances();
       setBackendOffline(false);
@@ -137,16 +141,19 @@ export default function MeetingsPage() {
     }
   };
 
-  // Delete/cancel a meeting from the tree (Note: instances tree is local state backed on server JSON store, let's trigger mock delete if necessary or reload tree)
   const handleDeleteMeeting = async (committeeId: string, meetingId: string) => {
     if (!confirm("Voulez-vous vraiment annuler cette réunion ?")) return;
     try {
-      // In the current backend, instances are saved. Let's send a request if supported or alert.
-      // Since deleteMeeting is for global meetings table and there is no direct deleteInstanceMeeting, we can show a success alert and reload, or handle it gracefully.
-      alert("La réunion a été marquée comme annulée.");
+      await api.deleteInstanceMeeting(committeeId, meetingId);
+      alert("La réunion a été annulée avec succès.");
+      await loadInstances();
       setBackendOffline(false);
     } catch (err: any) {
       console.error(err);
+      if (!err.response || err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
+        setBackendOffline(true);
+      }
+      alert("Erreur lors de l'annulation de la réunion.");
     }
   };
 
@@ -174,6 +181,7 @@ export default function MeetingsPage() {
           allMeetings.push({
             committeeName: c.nom,
             committeeId: c.id,
+            membres: c.membres || 'Aucun membre',
             meeting: m
           });
         });
@@ -182,16 +190,16 @@ export default function MeetingsPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-100 font-sans">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
       
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-4 transition-colors duration-300">
         <div>
-          <h2 className="text-base font-extrabold text-white tracking-tight uppercase flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-indigo-400" />
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-2 transition-colors duration-300">
+            <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
             Meetings & Instances Configuration
           </h2>
-          <p className="text-[11px] text-slate-450 font-semibold mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-450 font-semibold mt-0.5 transition-colors duration-300">
             Organisez les conseils d'administration, comités d'audit et planifiez les séances de gouvernance.
           </p>
         </div>
@@ -199,7 +207,7 @@ export default function MeetingsPage() {
         <button
           type="button"
           onClick={() => setShowCommitteeModal(true)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-650 to-purple-650 hover:from-indigo-600 hover:to-purple-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/10 transition-all"
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-650 dark:to-purple-650 hover:from-indigo-700 hover:to-purple-700 dark:hover:from-indigo-600 dark:hover:to-purple-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm dark:shadow-lg dark:shadow-indigo-600/10 transition-all"
         >
           <FolderPlus className="w-4 h-4" />
           Nouveau Comité
@@ -213,14 +221,14 @@ export default function MeetingsPage() {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Arborescence des Instances */}
-          <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
-            <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-850 pb-2.5">
+          <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-4 transition-colors duration-300">
+            <h3 className="text-xs font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-850 pb-2.5 transition-colors duration-300">
               Arborescence des Instances
             </h3>
 
             {loading ? (
               <div className="py-8 flex flex-col items-center justify-center gap-2 text-slate-500">
-                <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
+                <Loader2 className="w-5 h-5 animate-spin text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
                 <span className="text-xs font-semibold animate-pulse">Chargement de la structure...</span>
               </div>
             ) : treeData?.committees.length === 0 ? (
@@ -235,40 +243,40 @@ export default function MeetingsPage() {
                     <div key={comite.id} className="space-y-1">
                       <div 
                         onClick={() => toggleCommittee(comite.id)}
-                        className="flex items-center justify-between p-2.5 hover:bg-slate-850/40 rounded-xl cursor-pointer transition-all border border-transparent hover:border-slate-800/60"
+                        className="flex items-center justify-between p-2.5 hover:bg-slate-50 dark:hover:bg-slate-850/40 rounded-xl cursor-pointer transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-800/60"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-slate-500">
                             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                           </span>
-                          <span className="p-1 bg-indigo-950/40 text-indigo-400 rounded-lg border border-indigo-500/25">
+                          <span className="p-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-200 dark:border-indigo-500/25 transition-colors duration-300">
                             <Building2 className="w-3.5 h-3.5" />
                           </span>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-200 truncate">{comite.nom}</p>
-                            <p className="text-[9px] text-slate-500 truncate font-medium">{comite.description || 'Comité de Gouvernance'}</p>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate transition-colors duration-300">{comite.nom}</p>
+                            <p className="text-[9px] text-slate-500 truncate font-medium transition-colors duration-300">{comite.description || 'Comité de Gouvernance'}</p>
                           </div>
                         </div>
-                        <span className="text-[9px] font-bold text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded-full border border-slate-800">
+                        <span className="text-[9px] font-bold text-slate-600 dark:text-slate-500 bg-slate-100 dark:bg-slate-950/60 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-800 transition-colors duration-300">
                           {comite.reunions?.length || 0} séances
                         </span>
                       </div>
 
                       {/* Tree sub-meetings */}
                       {isExpanded && (
-                        <div className="pl-6 border-l border-slate-850 ml-4.5 space-y-1.5 pt-1">
+                        <div className="pl-6 border-l border-slate-200 dark:border-slate-850 ml-4.5 space-y-1.5 pt-1 transition-colors duration-300">
                           {hasMeetings ? (
                             comite.reunions.map((meet) => (
-                              <div key={meet.id} className="flex items-center justify-between p-2 bg-slate-950/20 border border-slate-850 rounded-lg text-[11px] text-slate-400 hover:text-slate-200 transition-colors">
+                              <div key={meet.id} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-850 rounded-lg text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <Calendar className="w-3 h-3 text-purple-400 shrink-0" />
+                                  <Calendar className="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0 transition-colors duration-300" />
                                   <span className="truncate font-semibold">{meet.titre}</span>
                                 </div>
                                 <span className="font-mono text-[9px] text-slate-500 shrink-0">{meet.date}</span>
                               </div>
                             ))
                           ) : (
-                            <p className="text-[10px] text-slate-655 italic pl-2 py-1">Aucune réunion prévue</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-655 italic pl-2 py-1 transition-colors duration-300">Aucune réunion prévue</p>
                           )}
                         </div>
                       )}
@@ -280,20 +288,20 @@ export default function MeetingsPage() {
           </div>
 
           {/* Form: Ajouter Réunion */}
-          <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
-            <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-850 pb-2.5">
+          <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-4 transition-colors duration-300">
+            <h3 className="text-xs font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-850 pb-2.5 transition-colors duration-300">
               Ajouter une réunion sous instance
             </h3>
             
             <form onSubmit={handleAddMeeting} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                   Instance Cible
                 </label>
                 <select
                   value={selectedCommitteeId}
                   onChange={(e) => setSelectedCommitteeId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                   required
                 >
                   <option value="">Sélectionner un Comité...</option>
@@ -304,7 +312,7 @@ export default function MeetingsPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                   Titre de la Séance
                 </label>
                 <input
@@ -312,54 +320,54 @@ export default function MeetingsPage() {
                   placeholder="ex: Conseil d'Administration T2 2026"
                   value={meetingTitle}
                   onChange={(e) => setMeetingTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                     Date
                   </label>
                   <input
                     type="date"
                     value={meetingDate}
                     onChange={(e) => setMeetingDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                     Heure
                   </label>
                   <input
                     type="time"
                     value={meetingTime}
                     onChange={(e) => setMeetingTime(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                   Lieu / Salle
                 </label>
                 <input
                   type="text"
                   value={meetingLieu}
                   onChange={(e) => setMeetingLieu(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={formSubmitting}
-                className="w-full py-2.5 px-4 bg-indigo-650 hover:bg-indigo-600 active:scale-[0.98] text-white text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-md shadow-indigo-600/10 disabled:opacity-50"
+                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-650 dark:hover:bg-indigo-600 active:scale-[0.98] text-white text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-sm dark:shadow-md dark:shadow-indigo-600/10 disabled:opacity-50"
               >
                 {formSubmitting ? 'Enregistrement...' : 'Enregistrer la Séance'}
               </button>
@@ -371,13 +379,13 @@ export default function MeetingsPage() {
         {/* Right Column: Meetings Table */}
         <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-800/60 pb-3">
+          <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-4 transition-colors duration-300">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800/60 pb-3 transition-colors duration-300">
               <div>
-                <h3 className="text-xs font-bold text-white tracking-wide uppercase">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide uppercase transition-colors duration-300">
                   Liste des Réunions du Conseil & Instances
                 </h3>
-                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5 transition-colors duration-300">
                   Visualisez, supprimez ou déclenchez les convocations SMTP par email.
                 </p>
               </div>
@@ -386,7 +394,7 @@ export default function MeetingsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-slate-800 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-wider text-slate-500 font-bold transition-colors duration-300">
                     <th className="pb-3 pl-2">Séance / Instance</th>
                     <th className="pb-3">Date & Heure</th>
                     <th className="pb-3">Lieu / Salle</th>
@@ -395,53 +403,51 @@ export default function MeetingsPage() {
                     <th className="pb-3 text-right pr-2">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-850 transition-colors duration-300">
                   {allMeetings.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-500 italic">
+                      <td colSpan={6} className="py-8 text-center text-slate-500 italic transition-colors duration-300">
                         Aucune séance enregistrée en base d'instances.
                       </td>
                     </tr>
                   ) : (
-                    allMeetings.map(({ committeeName, committeeId, meeting }) => {
+                    allMeetings.map(({ committeeName, committeeId, membres, meeting }) => {
                       // Mock members list based on committee
-                      const convocations = committeeName.toLowerCase().includes('comité') 
-                        ? 'Sanaa, Ahmed, Meryem' 
-                        : 'Meryem, Saad, Sanaa, Ahmed';
+                      const convocations = membres;
                       
                       return (
-                        <tr key={meeting.id} className="hover:bg-slate-900/20 transition-colors">
-                          <td className="py-3.5 pl-2 font-bold text-slate-200">
+                        <tr key={meeting.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/20 transition-colors duration-300">
+                          <td className="py-3.5 pl-2 font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
                             <div>
                               <span>{meeting.titre}</span>
-                              <span className="block text-[9px] text-slate-500 font-semibold mt-0.5 uppercase tracking-wider">
+                              <span className="block text-[9px] text-slate-500 font-semibold mt-0.5 uppercase tracking-wider transition-colors duration-300">
                                 {committeeName}
                               </span>
                             </div>
                           </td>
-                          <td className="py-3.5 font-mono text-[10px] text-slate-400">
+                          <td className="py-3.5 font-mono text-[10px] text-slate-600 dark:text-slate-400 transition-colors duration-300">
                             <div className="flex flex-col gap-0.5">
                               <span className="font-bold">{meeting.date}</span>
                               <span className="text-slate-500">{meeting.heure}</span>
                             </div>
                           </td>
-                          <td className="py-3.5 text-slate-400 font-medium">
+                          <td className="py-3.5 text-slate-600 dark:text-slate-400 font-medium transition-colors duration-300">
                             <div className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-500" />
+                              <MapPin className="w-3 h-3 text-slate-400 dark:text-slate-500 transition-colors duration-300" />
                               <span>{meeting.lieu}</span>
                             </div>
                           </td>
-                          <td className="py-3.5 text-slate-405 font-semibold">
+                          <td className="py-3.5 text-slate-700 dark:text-slate-405 font-semibold transition-colors duration-300">
                             <div className="flex items-center gap-1.5">
-                              <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <Users className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0 transition-colors duration-300" />
                               <span className="truncate max-w-[140px]">{convocations}</span>
                             </div>
                           </td>
                           <td className="py-3.5">
-                            <span className={`px-2 py-0.5 text-[9px] font-black rounded-full border uppercase ${
+                            <span className={`px-2 py-0.5 text-[9px] font-black rounded-full border uppercase transition-colors duration-300 ${
                               meeting.statut === 'planifiee' 
-                                ? 'bg-indigo-950/40 border-indigo-500/20 text-indigo-400' 
-                                : 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400'
+                                ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' 
+                                : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                             }`}>
                               {meeting.statut}
                             </span>
@@ -451,7 +457,7 @@ export default function MeetingsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleTriggerSMTP(meeting.titre, meeting.date)}
-                                className="inline-flex items-center justify-center p-1.5 bg-slate-950 border border-slate-800 text-indigo-400 hover:text-indigo-300 rounded-lg hover:bg-slate-900 transition-all"
+                                className="inline-flex items-center justify-center p-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
                                 title="Déclencher Convocations SMTP"
                               >
                                 <MailCheck className="w-3.5 h-3.5" />
@@ -459,7 +465,7 @@ export default function MeetingsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteMeeting(committeeId, meeting.id)}
-                                className="inline-flex items-center justify-center p-1.5 bg-slate-950 border border-slate-800 text-rose-500 hover:text-rose-400 rounded-lg hover:bg-slate-900 transition-all"
+                                className="inline-flex items-center justify-center p-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
                                 title="Annuler la séance"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -480,19 +486,19 @@ export default function MeetingsPage() {
       </div>
 
       {/* Persistent Widget: Voice Module & Séance active */}
-      <footer className="p-4 bg-gradient-to-r from-indigo-950/30 to-purple-950/30 border border-indigo-500/20 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
-        <div className="flex items-center gap-3 text-indigo-300">
-          <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20 animate-pulse-subtle">
+      <footer className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-xs transition-colors duration-300">
+        <div className="flex items-center gap-3 text-indigo-600 dark:text-indigo-300 transition-colors duration-300">
+          <div className="p-2 bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-200 dark:border-indigo-500/20 animate-pulse-subtle transition-colors duration-300">
             <Mic className="w-4 h-4" />
           </div>
           <div>
-            <span className="font-black uppercase tracking-wider text-slate-200 block text-[10px]">Voice Module & Séance En Cours</span>
-            <p className="text-[11px] text-slate-400 font-semibold mt-0.5">Une séance est active ? Ouvrez l'enregistreur vocal Whisper LLaMA.</p>
+            <span className="font-black uppercase tracking-wider text-slate-900 dark:text-slate-200 block text-[10px] transition-colors duration-300">Voice Module & Séance En Cours</span>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 transition-colors duration-300">Une séance est active ? Ouvrez l'enregistreur vocal Whisper LLaMA.</p>
           </div>
         </div>
         <a
           href="/pv-generator"
-          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl text-[11px] font-black uppercase tracking-wider shadow-md shadow-indigo-600/10 transition-all active:scale-95 shrink-0"
+          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-650 dark:hover:bg-indigo-600 text-white rounded-xl text-[11px] font-black uppercase tracking-wider shadow-sm dark:shadow-md dark:shadow-indigo-600/10 transition-all active:scale-95 shrink-0"
         >
           <Volume2 className="w-3.5 h-3.5" />
           Lancer l'Enregistrement
@@ -501,22 +507,22 @@ export default function MeetingsPage() {
 
       {/* Nouveau Comité modal dialog */}
       {showCommitteeModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 shadow-2xl max-w-md w-full rounded-2xl p-5 space-y-4">
+        <div className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors duration-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl max-w-md w-full rounded-2xl p-5 space-y-4 transition-colors duration-300">
             
-            <div className="flex justify-between items-center border-b border-slate-850 pb-3">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-850 pb-3 transition-colors duration-300">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                <span className="p-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors duration-300">
                   <Sparkles className="w-4 h-4" />
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-white">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white transition-colors duration-300">
                   Nouveau Comité d'Instance
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCommitteeModal(false)}
-                className="p-1 bg-slate-950/40 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-slate-200 transition-all border border-slate-800"
+                className="p-1 bg-slate-50 dark:bg-slate-950/40 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all border border-slate-200 dark:border-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -524,7 +530,7 @@ export default function MeetingsPage() {
 
             <form onSubmit={handleCreateCommittee} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                   Nom de l'Instance
                 </label>
                 <input
@@ -532,13 +538,13 @@ export default function MeetingsPage() {
                   placeholder="ex: Comité d'Audit et de Conformité"
                   value={newCommitteeName}
                   onChange={(e) => setNewCommitteeName(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-100 placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
                   Description
                 </label>
                 <textarea
@@ -546,22 +552,35 @@ export default function MeetingsPage() {
                   value={newCommitteeDesc}
                   onChange={(e) => setNewCommitteeDesc(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-100 placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-550 transition-all"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-850">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500 mb-1.5 transition-colors duration-300">
+                  Membres (séparés par virgule)
+                </label>
+                <input
+                  type="text"
+                  placeholder="ex: Meryem, Saad, Sanaa"
+                  value={newCommitteeMembres}
+                  onChange={(e) => setNewCommitteeMembres(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 transition-all"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-850 transition-colors duration-300">
                 <button
                   type="button"
                   onClick={() => setShowCommitteeModal(false)}
-                  className="px-4 py-2 border border-slate-800 bg-slate-955 hover:bg-slate-850 text-slate-400 hover:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={committeeSubmitting}
-                  className="px-4 py-2 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl text-xs font-black tracking-wide uppercase active:scale-95 transition-all shadow-md shadow-indigo-600/10 disabled:opacity-50"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-650 dark:hover:bg-indigo-600 text-white rounded-xl text-xs font-black tracking-wide uppercase active:scale-95 transition-all shadow-sm dark:shadow-md dark:shadow-indigo-600/10 disabled:opacity-50"
                 >
                   {committeeSubmitting ? 'Création...' : 'Créer Comité'}
                 </button>

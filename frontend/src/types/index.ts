@@ -42,6 +42,7 @@ export interface PVResult {
   pv_markdown: string;
   pv_html?: string;
   pdf_path?: string;
+  nom_fichier?: string;
   nom_fichier_md?: string;
   decisions?: string[];
   actions?: string[];
@@ -60,11 +61,28 @@ export interface EmailAnalysis {
   moteur: string;
 }
 
+export interface DemandeEntrante {
+  id: string | number;
+  from: string;
+  subject: string;
+  date: string;
+  urgency: string;
+  email_brut: string;
+}
+
+export interface Notification {
+  id: string | number;
+  type: string;
+  text: string;
+  time: string;
+}
+
 export interface InstanceCommittee {
   id: string;
   nom: string;
   type: string;
   description: string;
+  membres?: string;
   reunions: InstanceMeeting[];
 }
 

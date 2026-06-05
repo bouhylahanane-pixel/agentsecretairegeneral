@@ -22,6 +22,7 @@ class ComiteCreate(BaseModel):
     """Création d'un comité dans l'arborescence."""
     nom: str = Field(..., min_length=2)
     description: str = Field(default="")
+    membres: str = Field(default="")
 
 
 class ReunionSousComiteCreate(BaseModel):

@@ -3,7 +3,7 @@ import { useChat } from '../contexts/ChatContext';
 import { useUser } from '../contexts/UserContext';
 import { api } from '../api/endpoints';
 import { getDownloadUrl } from '../api/client';
-import MessageItem from '../components/chat/MessageItem';
+import MessageList from '../components/chat/MessageList';
 import { Send, Trash2 } from 'lucide-react';
 
 export default function ChatPage() {
@@ -11,11 +11,6 @@ export default function ChatPage() {
   const { user } = useUser();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,53 +45,35 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-white">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-white dark:bg-slate-900 transition-colors duration-300">
       {/* Top bar chat */}
-      <div className="h-14 border-b border-gray-200 px-6 flex items-center justify-between shrink-0">
-        <span className="text-sm font-medium text-gray-600">Discussion avec l'Agent IA</span>
+      <div className="h-14 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between shrink-0 transition-colors duration-300">
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors duration-300">Discussion avec l'Agent IA</span>
         <button 
           onClick={clearChat}
-          className="text-xs flex items-center gap-1.5 text-gray-400 hover:text-rose-600 transition-colors"
+          className="text-xs flex items-center gap-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-500 transition-colors"
         >
           <Trash2 className="w-3.5 h-3.5" /> Effacer l'historique
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
-        {messages.map((msg) => (
-          <MessageItem key={msg.id} message={msg} />
-        ))}
-        {sending && (
-          <div className="p-5 flex gap-4 bg-slate-50 border-b border-gray-100">
-            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white animate-pulse">🤖</div>
-            <div className="space-y-2 mt-1">
-              <span className="text-xs font-semibold text-indigo-600 animate-pulse">L'agent analyse et formule une réponse...</span>
-              <div className="flex gap-1.5 items-center pt-1">
-                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce"></span>
-                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]"></span>
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
+      <MessageList messages={messages} sending={sending} />
 
       {/* Formulaire Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-gray-200 bg-gray-50 flex gap-4 shrink-0">
+      <form onSubmit={handleSend} className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex gap-4 shrink-0 transition-colors duration-300">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ex: Générer une attestation de stage pour Adam Rami..."
           disabled={sending}
-          className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 shadow-sm disabled:bg-gray-100"
+          className="flex-1 px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-550 shadow-sm disabled:bg-slate-100 dark:disabled:bg-slate-900 transition-colors duration-300"
         />
         <button
           type="submit"
           disabled={!input.trim() || sending}
-          className="px-5 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center disabled:bg-gray-300 disabled:shadow-none"
+          className="px-5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-650 dark:hover:bg-indigo-600 text-white rounded-xl shadow-md transition-all flex items-center justify-center disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:shadow-none"
         >
           <Send className="w-4 h-4" />
         </button>

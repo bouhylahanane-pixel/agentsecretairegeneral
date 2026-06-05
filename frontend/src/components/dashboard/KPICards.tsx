@@ -1,40 +1,40 @@
 import { Calendar, FileClock, FileCheck, BrainCircuit } from 'lucide-react';
 
 interface KPICardsProps {
-  totalMeetings: number;
-  pendingMinutes: number;
+  totalRequests: number;
+  urgentRequests: number;
   extractedDecisions: number;
-  aiEfficiency: string;
+  averageResponseTime: string;
 }
 
-export default function KPICards({ totalMeetings, pendingMinutes, extractedDecisions, aiEfficiency }: KPICardsProps) {
+export default function KPICards({ totalRequests, urgentRequests, extractedDecisions, averageResponseTime }: KPICardsProps) {
   const items = [
     {
-      title: 'Total Meetings',
-      val: totalMeetings,
+      title: 'Total Requêtes IA',
+      val: totalRequests,
       icon: Calendar,
-      color: 'text-indigo-400 bg-indigo-950/40 border-indigo-500/20',
+      color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-500/20',
       glow: 'shadow-indigo-500/5',
     },
     {
-      title: 'Pending Minutes',
-      val: pendingMinutes,
+      title: 'Urgences Détectées',
+      val: urgentRequests,
       icon: FileClock,
-      color: 'text-amber-400 bg-amber-950/40 border-amber-500/20',
+      color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/20',
       glow: 'shadow-amber-500/5',
     },
     {
-      title: 'Extracted Decisions',
+      title: 'Décisions Extraites',
       val: extractedDecisions,
       icon: FileCheck,
-      color: 'text-emerald-400 bg-emerald-950/40 border-emerald-500/20',
+      color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/20',
       glow: 'shadow-emerald-500/5',
     },
     {
-      title: 'AI Processing Efficiency',
-      val: aiEfficiency,
+      title: 'Temps de Réponse IA',
+      val: averageResponseTime,
       icon: BrainCircuit,
-      color: 'text-purple-400 bg-purple-950/40 border-purple-500/20',
+      color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-500/20',
       glow: 'shadow-purple-500/5',
     },
   ];
@@ -46,16 +46,16 @@ export default function KPICards({ totalMeetings, pendingMinutes, extractedDecis
         return (
           <div
             key={idx}
-            className={`p-5 bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl flex items-center gap-4 transition-all duration-300 hover:border-slate-700/60 hover:shadow-lg ${item.glow}`}
+            className={`p-5 bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl flex items-center gap-4 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700/60 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-lg ${item.glow}`}
           >
-            <div className={`p-3 rounded-xl border ${item.color}`}>
+            <div className={`p-3 rounded-xl border transition-colors duration-300 ${item.color}`}>
               <Icon className="w-5 h-5 shrink-0" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">
+              <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase transition-colors duration-300">
                 {item.title}
               </p>
-              <h4 className="text-xl font-black text-white mt-1 tracking-tight">
+              <h4 className="text-xl font-black text-slate-800 dark:text-white mt-1 tracking-tight transition-colors duration-300">
                 {item.val}
               </h4>
             </div>

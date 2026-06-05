@@ -17,7 +17,7 @@ export function useAgent() {
 
     try {
       // 2. Transmettre la requête à l'agent FastAPI
-      const res = await api.processMessage(text, user);
+      const res = await api.processMessage(text, user?.name || 'Utilisateur');
       
       // 3. Injecter la réponse de l'agent avec ses métadonnées (fichiers attachés)
       addMessage({

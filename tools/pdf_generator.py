@@ -96,14 +96,22 @@ def generate_attestation_stage_pdf(params, filename=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"outputs/attestations/attestation_stage_{nom}_{timestamp}.pdf"
 
-    text = f"""
-    <b>Nom du stagiaire :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
-    <b>Entreprise d'accueil :</b> {params.get("entreprise", "Entreprise non précisée")}<br/><br/>
-    <b>Département / Service :</b> {params.get("departement", params.get("service", "-"))}<br/><br/>
-    <b>Encadrant de Stage :</b> {params.get("encadrant", "-")}<br/><br/>
-    <b>Période de stage :</b> {params.get("date_debut", "-")} → {params.get("date_fin", "-")}<br/><br/>
-    Fait à Tanger, le <b>{params.get("date") or datetime.today().strftime("%Y-%m-%d")}</b>
-    """
+    if params.get("details"):
+        details_html = params.get("details").replace('\n', '<br/>')
+        text = f"""
+        <b>Nom du stagiaire :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        {details_html}<br/><br/>
+        Fait à Tanger, le <b>{params.get("date") or datetime.today().strftime("%Y-%m-%d")}</b>
+        """
+    else:
+        text = f"""
+        <b>Nom du stagiaire :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        <b>Entreprise d'accueil :</b> {params.get("entreprise", "Entreprise non précisée")}<br/><br/>
+        <b>Département / Service :</b> {params.get("departement", params.get("service", "-"))}<br/><br/>
+        <b>Encadrant de Stage :</b> {params.get("encadrant", "-")}<br/><br/>
+        <b>Période de stage :</b> {params.get("date_debut", "-")} → {params.get("date_fin", "-")}<br/><br/>
+        Fait à Tanger, le <b>{params.get("date") or datetime.today().strftime("%Y-%m-%d")}</b>
+        """
     return build_pdf("ATTESTATION DE STAGE", text, filename)
 
 
@@ -116,13 +124,21 @@ def generate_attestation_travail_pdf(params, filename=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"outputs/attestations/attestation_travail_{nom}_{timestamp}.pdf"
 
-    text = f"""
-    <b>Nom du collaborateur :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
-    <b>Poste occupé :</b> {params.get("poste", "Non précisé")}<br/><br/>
-    <b>Département :</b> {params.get("departement", "-")}<br/><br/>
-    <b>Date de prise de fonction :</b> {params.get("date_debut", "-")}<br/><br/>
-    Fait le <b>{params.get("date") or datetime.today().strftime("%Y-%m-%d")}</b>
-    """
+    if params.get("details"):
+        details_html = params.get("details").replace('\n', '<br/>')
+        text = f"""
+        <b>Nom du collaborateur :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        {details_html}<br/><br/>
+        Fait le <b>{params.get("date") or datetime.today().strftime("%Y-%m-%d")}</b>
+        """
+    else:
+        text = f"""
+        <b>Nom du collaborateur :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        <b>Poste occupé :</b> {params.get("poste", "Non précisé")}<br/><br/>
+        <b>Département :</b> {params.get("departement", "-")}<br/><br/>
+        <b>Date de prise de fonction :</b> {params.get("date_debut", "-")}<br/><br/>
+        Fait le <b>{params.get("date") or datetime.today().strftime("%Y-%m-%d")}</b>
+        """
     return build_pdf("ATTESTATION DE TRAVAIL", text, filename)
 
 
@@ -135,11 +151,19 @@ def generate_attestation_presence_pdf(params, filename=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"outputs/attestations/attestation_presence_{nom}_{timestamp}.pdf"
 
-    text = f"""
-    <b>Nom de la personne présente :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
-    <b>Date de l'émargement :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
-    <b>Lieu de présence :</b> {params.get("lieu", "-")}
-    """
+    if params.get("details"):
+        details_html = params.get("details").replace('\n', '<br/>')
+        text = f"""
+        <b>Nom de la personne présente :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        {details_html}<br/><br/>
+        <b>Date de l'émargement :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}
+        """
+    else:
+        text = f"""
+        <b>Nom de la personne présente :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        <b>Date de l'émargement :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
+        <b>Lieu de présence :</b> {params.get("lieu", "-")}
+        """
     return build_pdf("ATTESTATION DE PRÉSENCE", text, filename)
 
 
@@ -152,13 +176,21 @@ def generate_convocation_reunion_pdf(params, filename=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"outputs/convocations/convocation_reunion_{nom}_{timestamp}.pdf"
 
-    text = f"""
-    <b>Date de la séance :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
-    <b>Heure :</b> {params.get("heure", "-")}<br/><br/>
-    <b>Lieu / Salle :</b> {params.get("lieu", "Salle A")}<br/><br/>
-    <b>Objet de la rencontre :</b> {params.get("objet", "-")}<br/><br/>
-    <b>Liste des Participants :</b> {params.get("participants", "-")}
-    """
+    if params.get("details"):
+        details_html = params.get("details").replace('\n', '<br/>')
+        text = f"""
+        <b>Participant :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
+        {details_html}<br/><br/>
+        <b>Date :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}
+        """
+    else:
+        text = f"""
+        <b>Date de la séance :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
+        <b>Heure :</b> {params.get("heure", "-")}<br/><br/>
+        <b>Lieu / Salle :</b> {params.get("lieu", "Salle A")}<br/><br/>
+        <b>Objet de la rencontre :</b> {params.get("objet", "-")}<br/><br/>
+        <b>Liste des Participants :</b> {params.get("participants", "-")}
+        """
     return build_pdf("CONVOCATION RÉUNION", text, filename)
 
 
@@ -171,14 +203,22 @@ def generate_convocation_entretien_pdf(params, filename=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"outputs/convocations/convocation_entretien_{nom}_{timestamp}.pdf"
 
-    text = f"""
-    <b>Nom du Candidat :</b> {params.get("nom", "-")}<br/><br/>
-    <b>Poste visé :</b> {params.get("poste", "-")}<br/><br/>
-    <b>Responsable du recrutement :</b> {params.get("recruteur", "-")}<br/><br/>
-    <b>Date fixée :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
-    <b>Heure de rendez-vous :</b> {params.get("heure", "-")}<br/><br/>
-    <b>Lieu de l'entretien :</b> {params.get("lieu", "Bureau RH")} - {params.get("salle", "-")}
-    """
+    if params.get("details"):
+        details_html = params.get("details").replace('\n', '<br/>')
+        text = f"""
+        <b>Nom du Candidat :</b> {params.get("nom", "-")}<br/><br/>
+        {details_html}<br/><br/>
+        <b>Date fixée :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}
+        """
+    else:
+        text = f"""
+        <b>Nom du Candidat :</b> {params.get("nom", "-")}<br/><br/>
+        <b>Poste visé :</b> {params.get("poste", "-")}<br/><br/>
+        <b>Responsable du recrutement :</b> {params.get("recruteur", "-")}<br/><br/>
+        <b>Date fixée :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
+        <b>Heure de rendez-vous :</b> {params.get("heure", "-")}<br/><br/>
+        <b>Lieu de l'entretien :</b> {params.get("lieu", "Bureau RH")} - {params.get("salle", "-")}
+        """
     return build_pdf("CONVOCATION ENTRETIEN", text, filename)
 
 
@@ -220,7 +260,7 @@ def generate_pv_pdf(params, filename=None):
     text = f"""
     <font color='#1e3d59'><b>INFORMATIONS GÉNÉRALES</b></font><br/>
     -------------------------------------------------------------------------------------------------------------------------<br/>
-    <b>Date :</b> 2026-05-22<br/>
+    <b>Date :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/>
     <b>Lieu :</b> {params.get("lieu", params.get("salle", "Salle de Conférence B"))}<br/>
     <b>Sujet :</b> {params.get("objet", "Migration des bases de données")}<br/>
     <b>Participants :</b> {params.get("participants", "Ahmed, Sanaa, Directeur Technique, Meryem")}<br/><br/>

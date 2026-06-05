@@ -1,8 +1,7 @@
 import os
 import json
 import requests
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi import APIRouter, UploadFile, File, HTTPException # 🟢 File et UploadFile conservés au besoin
+from fastapi import FastAPI, Request, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -13,7 +12,6 @@ from tools.meeting import list_meetings, find_meeting_by_date, delete_meeting, g
 # EXTRACTION CORRIGÉE : Ajout de get_all_logs pour ton tableau de bord
 from tools.history_manager import get_analytics_stats, get_activity_by_action, get_all_logs
 
-from fastapi import Request
 import shutil
 
 # 1. Initialisation unique de l'application FastAPI
@@ -41,15 +39,30 @@ app.add_middleware(
 )
 
 # 3. Routeurs API modulaires (/api/*)
-from api.routers import analyze, instances, minutes, tasks
+from api.routers import analyze, instances, minutes, tasks, auth, documents
 
 app.include_router(instances.router)
 app.include_router(analyze.router)
+app.include_router(auth.router)
 app.include_router(minutes.router)
 app.include_router(tasks.router)
+app.include_router(documents.router)
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # 🟢 Récupération sécurisée de la clé Groq stockée dans l'environnement (chargée par ton .env)
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+from data.database_manager import init_db
+from tools.rag_engine import init_rag_table
+
+@app.on_event("startup")
+async def startup_event():
+    print("Initialisation de la base de données...")
+    init_db()
+    init_rag_table()
+    print("Bases de données prêtes.")
 
 
 # ==========================================
@@ -714,17 +727,28 @@ async def trigger_invitations(data: dict):
     meeting_date = data.get("date", "2026-06-05")
     
     from tools.history_manager import save_history
-    save_history({
-        "user": "Meryem",
-        "action": f"SMTP Invitations sent: {meeting_title}",
-        "priorite": "Moyenne",
-        "temps_execution": 420
-    })
+    from tools.email_sender import send_invitation_email
+
+    # Envoi de l'email (vers notre propre adresse de test, ou à une liste configurée)
+    # Dans la réalité, on prendrait la liste des membres du comité.
+    import os
+    test_email = os.getenv("EMAIL_USER", "agentsecretairegeneral@gmail.com")
     
-    return {
-        "status": "success",
-        "message": f"SMTP Invitations envoyées avec succès pour la réunion '{meeting_title}' le {meeting_date}."
-    }
+    success = send_invitation_email(meeting_title, meeting_date, [test_email])
+    
+    if success:
+        save_history({
+            "user": "Meryem",
+            "action": f"SMTP Invitations sent: {meeting_title}",
+            "priorite": "Moyenne",
+            "temps_execution": 420
+        })
+        return {
+            "status": "success",
+            "message": f"SMTP Invitations envoyées avec succès pour la réunion '{meeting_title}' le {meeting_date}."
+        }
+    else:
+        raise HTTPException(status_code=500, detail="Échec de l'envoi de l'email SMTP. Veuillez vérifier votre configuration .env.")
 
 
 # ==========================================
@@ -753,6 +777,53 @@ def download_file(file_path: str):
         )
 
     return {"error": f"Fichier introuvable : {file_path}"}
+# ==========================================
+# 🌐 DYNAMIC FRONTEND DATA
+# ==========================================
+
+from data.database_manager import DB_PATH
+import sqlite3
+
+@app.get("/api/demandes", tags=["Frontend"])
+async def get_demandes():
+    """Récupère les demandes entrantes depuis la BDD."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT req_id, from_email, subject, date, urgency, email_brut FROM demandes_entrantes")
+    lignes = cursor.fetchall()
+    conn.close()
+    
+    resultat = []
+    for l in lignes:
+        resultat.append({
+            "id": l[0],
+            "from": l[1],
+            "subject": l[2],
+            "date": l[3],
+            "urgency": l[4],
+            "email_brut": l[5]
+        })
+    return resultat
+
+@app.get("/api/notifications", tags=["Frontend"])
+async def get_notifications():
+    """Récupère les notifications système depuis la BDD."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, type_notif, text, time_str FROM notifications")
+    lignes = cursor.fetchall()
+    conn.close()
+    
+    resultat = []
+    for l in lignes:
+        resultat.append({
+            "id": l[0],
+            "type": l[1],
+            "text": l[2],
+            "time": l[3]
+        })
+    return resultat
+
 if __name__ == "__main__":
     import uvicorn
     # Port 8000 — aligné avec le frontend Vite (import.meta.env.VITE_API_BASE_URL)

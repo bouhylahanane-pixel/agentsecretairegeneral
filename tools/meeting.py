@@ -139,7 +139,7 @@ def create_meeting(params):
 def list_meetings():
     meetings = load_meetings()
     if not meetings:
-        return "Aucune réunion trouvée."
+        return []
     return meetings
 
 # ==========================================

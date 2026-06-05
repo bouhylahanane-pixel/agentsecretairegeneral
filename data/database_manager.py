@@ -21,7 +21,8 @@ def init_db():
             departement TEXT,
             date_recrutement TEXT,
             heures_travail INTEGER,
-            disponibilite TEXT
+            disponibilite TEXT,
+            mot_de_passe TEXT
         )
     """)
     
@@ -50,7 +51,10 @@ def init_db():
         "adresse": "TEXT",
         "departement": "TEXT",
         "date_recrutement": "TEXT",
-        "heures_travail": "INTEGER"
+        "heures_travail": "INTEGER",
+        "disponibilite": "TEXT",
+        "cin": "TEXT",
+        "mot_de_passe": "TEXT"
     }
     
     cursor.execute("PRAGMA table_info(employes)")
@@ -69,10 +73,17 @@ def init_db():
             date TEXT NOT NULL,
             heure_debut TEXT NOT NULL,
             heure_fin TEXT NOT NULL,
+            lieu TEXT,
             organisateur_id INTEGER,
             FOREIGN KEY (organisateur_id) REFERENCES employes(id)
         )
     """)
+    
+    cursor.execute("PRAGMA table_info(reunions)")
+    colonnes_reunions = [col[1] for col in cursor.fetchall()]
+    if "lieu" not in colonnes_reunions:
+        cursor.execute("ALTER TABLE reunions ADD COLUMN lieu TEXT")
+        print("Colonne lieu ajoutée à la table reunions")
     
     # 3. Table des logs
     cursor.execute("""
@@ -83,6 +94,29 @@ def init_db():
             action_requise TEXT,
             priorite TEXT,
             temps_execution INTEGER
+        )
+    """)
+    
+    # 4. Table des demandes entrantes
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS demandes_entrantes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            req_id TEXT UNIQUE,
+            from_email TEXT,
+            subject TEXT,
+            date TEXT,
+            urgency TEXT,
+            email_brut TEXT
+        )
+    """)
+    
+    # 5. Table des notifications
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type_notif TEXT,
+            text TEXT,
+            time_str TEXT
         )
     """)
     
@@ -101,25 +135,25 @@ def insérer_employes_test():
     # Liste élargie et enrichie des employés avec les vrais e-mails de test
     employes = [
         # Contrats de 40h/semaine
-        ("souhaila", "Ben", "souhaben535@gmail.com", "+212 6 61 11 22 33", "Tanger, Place Id厂商 (Iberia)", "Secrétaire Générale", "Direction", "2023-05-10", 40, "08:30-16:30"),
-        ("Mohamed", "Alami", "mohamed.tech@entreprise.ma", "+212 6 65 44 33 22", "Tanger, Route de Tétouan", "Responsable Logistique", "Logistique", "2022-03-20", 40, "08:30-16:30"),
-        ("Karima", "Tazi", "karima.fin@entreprise.ma", "+212 6 67 11 22 44", "Tanger, Malabata", "Directrice Financière", "Finance", "2021-11-15", 40, "08:30-16:30"),
-        ("Omar", "Mansouri", "omar.com@entreprise.ma", "+212 6 69 55 66 77", "Tanger, Quartier California", "Responsable Commercial", "Commercial", "2023-08-12", 40, "08:30-16:30"),
+        ("souhaila", "Ben", "souhaben535@gmail.com", "+212 6 61 11 22 33", "Tanger, Place Id厂商 (Iberia)", "Secrétaire Générale", "Direction", "2023-05-10", 40, "08:30-16:30", "secretariat2026"),
+        ("Mohamed", "Alami", "mohamed.tech@entreprise.ma", "+212 6 65 44 33 22", "Tanger, Route de Tétouan", "Responsable Logistique", "Logistique", "2022-03-20", 40, "08:30-16:30", "secretariat2026"),
+        ("Karima", "Tazi", "karima.fin@entreprise.ma", "+212 6 67 11 22 44", "Tanger, Malabata", "Directrice Financière", "Finance", "2021-11-15", 40, "08:30-16:30", "secretariat2026"),
+        ("Omar", "Mansouri", "omar.com@entreprise.ma", "+212 6 69 55 66 77", "Tanger, Quartier California", "Responsable Commercial", "Commercial", "2023-08-12", 40, "08:30-16:30", "secretariat2026"),
 
         # Contrats de 35h/semaine
-        ("Ahmed", "Ahmadi", "ahmed.drh@entreprise.ma", "+212 6 61 23 45 67", "Tanger, Branes", "Directeur RH", "Ressources Humaines", "2024-01-15", 35, "09:00-16:00"),
-        ("Sanaa", "El Amrani", "sanaa.rh@entreprise.ma", "+212 6 62 98 76 54", "Tanger, Boukhalef", "Chargée de Recrutement", "Ressources Humaines", "2024-11-01", 35, "09:00-16:00"),
-        ("Hanane", "Bouhyla", "bouhyla.hanane@etu.uae.ac.ma", "+212 6 63 99 88 77", "Tanger, Centre Ville", "Développeur Senior", "Technique", "2024-06-01", 35, "09:00-16:00"),
-        ("Amine", "Benjelloun", "amine.sys@entreprise.ma", "+212 6 63 45 12 89", "Tanger, Mesnana", "Administrateur Système", "Technique", "2025-05-10", 35, "09:00-16:00"),
-        ("Layla", "Kadiri", "layla.mkt@entreprise.ma", "+212 6 68 00 11 22", "Tanger, Val Fleuri", "Social Media Manager", "Marketing", "2025-02-02", 35, "09:00-16:00")
+        ("Ahmed", "Ahmadi", "ahmed.drh@entreprise.ma", "+212 6 61 23 45 67", "Tanger, Branes", "Directeur RH", "Ressources Humaines", "2024-01-15", 35, "09:00-16:00", "secretariat2026"),
+        ("Sanaa", "El Amrani", "sanaa.rh@entreprise.ma", "+212 6 62 98 76 54", "Tanger, Boukhalef", "Chargée de Recrutement", "Ressources Humaines", "2024-11-01", 35, "09:00-16:00", "secretariat2026"),
+        ("Hanane", "Bouhyla", "hanane.bouhyla@entreprise.ma", "+212 6 63 99 88 77", "Tanger, Centre Ville", "Développeur Senior", "Technique", "2024-06-01", 35, "09:00-16:00", "secretariat2026"),
+        ("Amine", "Benjelloun", "amine.sys@entreprise.ma", "+212 6 63 45 12 89", "Tanger, Mesnana", "Administrateur Système", "Technique", "2025-05-10", 35, "09:00-16:00", "secretariat2026"),
+        ("Layla", "Kadiri", "layla.mkt@entreprise.ma", "+212 6 68 00 11 22", "Tanger, Val Fleuri", "Social Media Manager", "Marketing", "2025-02-02", 35, "09:00-16:00", "secretariat2026")
     ]
     
     # Note : J'ai gardé ta structure exacte d'employés. J'ai retiré temporairement 
     # certains doublons de noms pour éviter l'erreur SQLite "UNIQUE constraint failed" au cas où.
     
     cursor.executemany("""
-        INSERT INTO employes (nom, prenom, email, telephone, adresse, poste, departement, date_recrutement, heures_travail, disponibilite)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO employes (nom, prenom, email, telephone, adresse, poste, departement, date_recrutement, heures_travail, disponibilite, mot_de_passe)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, employes)
     
     conn.commit()
@@ -173,7 +207,7 @@ def inserer_stagiaires_test():
     
     conn.commit()
     conn.close()
-    print("🚀 Les 4 profils de stagiaires ont été ajoutés de manière isolée et sécurisée !")
+    print("Les 4 profils de stagiaires ont été ajoutés de manière isolée et sécurisée !")
 
 def inserer_infos_smart_automation():
     """Injecte l'historique, les projets et les clients de Smart Automation Technologies dans la table documents_rag."""
@@ -216,9 +250,45 @@ def inserer_infos_smart_automation():
     print("Les données de Smart Automation Technologies Tanger ont été injectées avec succès !")
 
 
+def inserer_mock_data_frontend():
+    """Injecte les données mock du frontend dans la BDD."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Demandes
+    cursor.execute("DELETE FROM demandes_entrantes")
+    demandes = [
+        ("req-01", "legal@entreprise.ma", "Notification de mise en conformité Loi 17-95 sur les SA", "03 Juin 14:22", "LEGAL COMPLIANCE", "Madame la Secrétaire Générale,\n\nConformément à la loi 17-95 relative aux sociétés anonymes, nous vous prions de transmettre les statuts mis à jour et le registre des décisions du Conseil avant le 15 juin.\n\nCordialement,\nService Juridique"),
+        ("req-02", "mohamed.alami@logistique.ma", "Demande d'achat de licences logicielles CAO pour l'équipe technique", "03 Juin 11:05", "ROUTINE", "Bonjour,\n\nNous sollicitons l'achat de 5 licences CAO pour le département technique. Budget estimé : 45 000 MAD. Merci de valider pour imputation budgétaire.\n\nMohamed Alami"),
+        ("req-03", "secretaire-general@finances.gov.ma", "Convocations audit fiscal obligatoire exercice 2025", "02 Juin 16:45", "HIGH URGENCY", "Notification officielle : audit de contrôle fiscal de l'administration. Délai impératif de 15 jours pour fournir l'ensemble des PV, registres et pièces comptables de l'exercice 2025.\n\nDirection des Finances"),
+        ("req-04", "sanaa.rh@entreprise.ma", "Fiches d'objectifs et sujets de stage des 4 stagiaires IA", "02 Juin 09:30", "ROUTINE", "Bonjour Meryem,\n\nVeuillez trouver ci-joint les fiches d'objectifs des stagiaires (Meryem, Saad, etc.). À aborder lors du point de coordination hebdomadaire.\n\nSanaa — RH")
+    ]
+    cursor.executemany("""
+        INSERT INTO demandes_entrantes (req_id, from_email, subject, date, urgency, email_brut)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, demandes)
+    
+    # Notifications
+    cursor.execute("DELETE FROM notifications")
+    notifications = [
+        ("warning", "Nouvelle requête [HIGH URGENCY] détectée par LLaMA 3.3", "Il y a 5 min"),
+        ("success", "PV_Conseil_2026-06-03.pdf généré et archivé avec succès", "Il y a 30 min"),
+        ("info", "4 nouvelles tâches extraites du dernier PV", "Il y a 1h"),
+        ("error", "Échec d'envoi SMTP (Convocations Conseil Stratégique)", "Il y a 2h")
+    ]
+    cursor.executemany("""
+        INSERT INTO notifications (type_notif, text, time_str)
+        VALUES (?, ?, ?)
+    """, notifications)
+    
+    conn.commit()
+    conn.close()
+    print("Les données mock du frontend ont été migrées vers SQLite !")
+
 # L'UNIQUE POINT D'ENTRÉE DU SCRIPT POUR TOUT LANCER D'UN COUP :
 if __name__ == "__main__":
     init_db()                           # 1. Crée les tables et vérifie les colonnes
     insérer_employes_test()             # 2. Insère les employés
     inserer_stagiaires_test()           # 3. Insère les 4 stagiaires isolés
     inserer_infos_smart_automation()    # 4. Injecte les données RAG
+    inserer_mock_data_frontend()        # 5. Injecte les données du dashboard

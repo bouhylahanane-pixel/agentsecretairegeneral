@@ -15,7 +15,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { useApiError } from '../contexts/ApiErrorContext';
 import { getDownloadUrl } from '../api/client';
-import { API_URL } from '../config';
+import { api } from '../api/endpoints';
 
 export default function PVGeneratorPage() {
   const { setBackendOffline } = useApiError();
@@ -96,39 +96,50 @@ export default function PVGeneratorPage() {
     }
   };
 
-  // Post raw micro audio to backend
-  const handleSendAudio = async (audioBlob: Blob) => {
+  // Process audio (Mic or File) -> Transcribe -> Generate Minutes
+  const processAudioFlow = async (audioBlob: Blob) => {
     setLoading(true);
-    setLoadingStep("Transcription de la réunion via Whisper...");
+    setBackendOffline(false);
     try {
-      const response = await fetch(`${API_URL}/agent/generate-pv`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "audio/wav",
-        },
-        body: audioBlob,
+      // 1. Transcription
+      setLoadingStep("Transcription vocale en cours...");
+      const transcribeRes = await api.transcribeAudio(audioBlob);
+      const transcribedText = transcribeRes.data.text;
+      
+      if (!transcribedText) {
+        throw new Error("Aucune transcription n'a pu être extraite.");
+      }
+      
+      setTranscription(transcribedText);
+
+      // 2. Structuration du PV avec les paramètres de la réunion
+      setLoadingStep("Génération du procès-verbal par l'IA...");
+      const parts = participants.split(',').map(p => p.trim()).filter(Boolean);
+      const minutesRes = await api.generateMinutes({
+        ordre_du_jour: agenda || "Réunion de travail",
+        participants: parts.length > 0 ? parts : ["Anonyme"],
+        notes_brutes: transcribedText,
+        date_reunion: new Date().toISOString().split('T')[0]
       });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || "Erreur de génération PV");
-      }
+      setPvMarkdown(minutesRes.data.pv_markdown || "Échec de la structuration.");
+      setPdfPath(minutesRes.data.pdf_path || "");
 
-      const data = await response.json();
-      setTranscription(data.transcription || "Aucune transcription brute renvoyée.");
-      setPvMarkdown(data.pv_markdown || "Échec de structuration du PV.");
-      setPdfPath(data.pdf_path || "");
-      setBackendOffline(false);
     } catch (err: any) {
-      console.error("Audio generation error:", err);
-      if (err.message.includes('Failed to fetch') || err.code === 'ERR_NETWORK') {
+      console.error("Erreur de génération PV:", err);
+      if (!err.response || err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
         setBackendOffline(true);
       }
-      alert(`Erreur: ${err.message || "Impossible de joindre le serveur de transcription."}`);
+      alert(`Erreur: ${err.response?.data?.detail || err.message || "Une erreur est survenue lors de la génération du PV."}`);
     } finally {
       setLoading(false);
       setLoadingStep("");
     }
+  };
+
+  // Post raw micro audio to backend
+  const handleSendAudio = async (audioBlob: Blob) => {
+    await processAudioFlow(audioBlob);
   };
 
   // Handle file import
@@ -136,37 +147,9 @@ export default function PVGeneratorPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setLoading(true);
-    setLoadingStep("Importation et transcription du fichier audio...");
     try {
-      const response = await fetch(`${API_URL}/agent/upload-pv`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "X-File-Name": file.name,
-        },
-        body: file,
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || "Erreur de traitement du fichier");
-      }
-
-      const data = await response.json();
-      setTranscription(data.transcription || "Aucune transcription brute renvoyée.");
-      setPvMarkdown(data.pv_markdown || "Échec de structuration du PV.");
-      setPdfPath(data.pdf_path || "");
-      setBackendOffline(false);
-    } catch (err: any) {
-      console.error("File upload error:", err);
-      if (err.message.includes('Failed to fetch') || err.code === 'ERR_NETWORK') {
-        setBackendOffline(true);
-      }
-      alert(`Erreur lors de l'import: ${err.message || "Échec de connexion."}`);
+      await processAudioFlow(file);
     } finally {
-      setLoading(false);
-      setLoadingStep("");
       if (fileInputRef.current) fileInputRef.current.value = ""; // clear file input
     }
   };
@@ -176,16 +159,16 @@ export default function PVGeneratorPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-100 font-sans">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
       
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-4 transition-colors duration-300">
         <div>
-          <h2 className="text-base font-extrabold text-white tracking-tight uppercase flex items-center gap-2">
-            <FileAudio className="w-5 h-5 text-indigo-400" />
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-2 transition-colors duration-300">
+            <FileAudio className="w-5 h-5 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
             Minutes & Task Extraction (PV Generator)
           </h2>
-          <p className="text-[11px] text-slate-450 font-semibold mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-450 font-semibold mt-0.5 transition-colors duration-300">
             Dictez en direct ou importez vos enregistrements pour générer des PV officiels par l'IA.
           </p>
         </div>
@@ -195,8 +178,8 @@ export default function PVGeneratorPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         
         {/* Agenda field */}
-        <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-2">
-          <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-2 transition-colors duration-300">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 transition-colors duration-300">
             Ordre du jour de la Réunion
           </label>
           <textarea
@@ -204,14 +187,14 @@ export default function PVGeneratorPage() {
             value={agenda}
             onChange={(e) => setAgenda(e.target.value)}
             rows={2}
-            className="w-full px-3.5 py-2.5 bg-slate-950/70 border border-slate-850 rounded-xl text-xs text-slate-200 placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-550 focus:border-transparent transition-all"
+            className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 focus:border-transparent transition-all"
           />
         </div>
 
         {/* Participants field */}
-        <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-2">
-          <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-2 transition-colors duration-300">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1.5 transition-colors duration-300">
+            <Users className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
             Membres Participants (séparés par des virgules)
           </label>
           <input
@@ -219,21 +202,21 @@ export default function PVGeneratorPage() {
             placeholder="ex: Meryem, Sanaa, Ahmed"
             value={participants}
             onChange={(e) => setParticipants(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-slate-950/70 border border-slate-850 rounded-xl text-xs text-slate-200 placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-550 focus:border-transparent transition-all"
+            className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-850 rounded-xl text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-550 focus:border-transparent transition-all"
           />
         </div>
 
       </div>
 
       {/* Audio Acquisition Buttons */}
-      <div className="flex flex-wrap items-center gap-4 bg-slate-900/20 p-4 border border-slate-850 rounded-2xl">
+      <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-slate-900/20 p-4 border border-slate-200 dark:border-slate-850 rounded-2xl transition-colors duration-300">
         
         {/* Record trigger */}
         {isRecording ? (
           <button
             type="button"
             onClick={stopRecording}
-            className="flex items-center gap-2 px-5 py-3 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-black tracking-widest uppercase rounded-xl shadow-lg shadow-rose-600/10 transition-all"
+            className="flex items-center gap-2 px-5 py-3 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-black tracking-widest uppercase rounded-xl shadow-sm dark:shadow-lg dark:shadow-rose-600/10 transition-all"
           >
             <Square className="w-4 h-4 shrink-0 fill-current animate-pulse" />
             Stop ({formatTime(recordTime)})
@@ -243,7 +226,7 @@ export default function PVGeneratorPage() {
             type="button"
             disabled={loading}
             onClick={startRecording}
-            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-650 to-indigo-600 hover:from-indigo-600 hover:to-indigo-500 active:scale-95 text-white text-xs font-black tracking-widest uppercase rounded-xl shadow-lg shadow-indigo-600/10 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-gradient-to-r dark:from-indigo-650 dark:to-indigo-600 dark:hover:from-indigo-600 dark:hover:to-indigo-500 active:scale-95 text-white text-xs font-black tracking-widest uppercase rounded-xl shadow-sm dark:shadow-lg dark:shadow-indigo-600/10 transition-all disabled:opacity-50"
           >
             <Mic className="w-4 h-4 shrink-0 text-white" />
             🎙️ Dicter Micro
@@ -255,9 +238,9 @@ export default function PVGeneratorPage() {
           type="button"
           disabled={loading || isRecording}
           onClick={triggerFileInput}
-          className="flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-850 active:scale-95 text-slate-300 hover:text-white text-xs font-black tracking-widest uppercase rounded-xl border border-slate-800 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 active:scale-95 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-black tracking-widest uppercase rounded-xl border border-slate-200 dark:border-slate-800 transition-all disabled:opacity-50"
         >
-          <Upload className="w-4 h-4 shrink-0 text-slate-400" />
+          <Upload className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400 transition-colors duration-300" />
           📥 Importer Audio
         </button>
 
@@ -281,8 +264,8 @@ export default function PVGeneratorPage() {
 
       {/* Loading state bar */}
       {loading && (
-        <div className="p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-2xl flex items-center gap-3 text-xs text-indigo-300">
-          <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+        <div className="p-4 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl flex items-center gap-3 text-xs text-indigo-700 dark:text-indigo-300 transition-colors duration-300">
+          <Loader2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 animate-spin transition-colors duration-300" />
           <span className="font-bold animate-pulse">{loadingStep}</span>
         </div>
       )}
@@ -291,25 +274,25 @@ export default function PVGeneratorPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Left: Raw Transcription Notes */}
-        <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-3.5 flex flex-col min-h-[400px]">
-          <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-850 pb-2.5 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-indigo-400" />
+        <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-3.5 flex flex-col min-h-[400px] transition-colors duration-300">
+          <h3 className="text-xs font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-850 pb-2.5 flex items-center gap-2 transition-colors duration-300">
+            <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
             Notes brutes de réunion (Transcription)
           </h3>
-          <div className="flex-1 bg-slate-950/50 p-4 border border-slate-850 rounded-xl overflow-y-auto text-sm text-slate-350 leading-relaxed font-mono">
+          <div className="flex-1 bg-slate-50 dark:bg-slate-950/50 p-4 border border-slate-200 dark:border-slate-850 rounded-xl overflow-y-auto text-sm text-slate-700 dark:text-slate-350 leading-relaxed font-mono transition-colors duration-300">
             {transcription ? (
               <p className="whitespace-pre-wrap">{transcription}</p>
             ) : (
-              <span className="text-slate-655 italic text-xs">Les notes transcrites s'afficheront ici après l'audio...</span>
+              <span className="text-slate-500 dark:text-slate-655 italic text-xs transition-colors duration-300">Les notes transcrites s'afficheront ici après l'audio...</span>
             )}
           </div>
         </div>
 
         {/* Right: Beautiful Markdown Generated PV */}
-        <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-3.5 flex flex-col min-h-[400px]">
-          <div className="flex justify-between items-center border-b border-slate-850 pb-2">
-            <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+        <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-3.5 flex flex-col min-h-[400px] transition-colors duration-300">
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-850 pb-2 transition-colors duration-300">
+            <h3 className="text-xs font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2 transition-colors duration-300">
+              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 transition-colors duration-300" />
               Document généré (Procès-Verbal)
             </h3>
             
@@ -318,7 +301,7 @@ export default function PVGeneratorPage() {
                 href={getDownloadUrl(pdfPath)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1 bg-emerald-650 hover:bg-emerald-600 active:scale-95 text-white text-[10px] font-black uppercase tracking-wider rounded-lg shadow-md shadow-emerald-600/10 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-650 dark:hover:bg-emerald-600 active:scale-95 text-white text-[10px] font-black uppercase tracking-wider rounded-lg shadow-sm dark:shadow-md dark:shadow-emerald-600/10 transition-all"
               >
                 <Download className="w-3.5 h-3.5 text-white" />
                 Télécharger le PDF Officiel
@@ -326,11 +309,11 @@ export default function PVGeneratorPage() {
             )}
           </div>
 
-          <div className="flex-1 bg-slate-950/50 p-4 border border-slate-850 rounded-xl overflow-y-auto markdown-body">
+          <div className="flex-1 bg-slate-50 dark:bg-slate-950/50 p-4 border border-slate-200 dark:border-slate-850 rounded-xl overflow-y-auto markdown-body transition-colors duration-300">
             {pvMarkdown ? (
               <ReactMarkdown>{pvMarkdown}</ReactMarkdown>
             ) : (
-              <span className="text-slate-655 italic text-xs block">Le PV structuré s'affichera ici après le traitement de l'IA...</span>
+              <span className="text-slate-500 dark:text-slate-655 italic text-xs block transition-colors duration-300">Le PV structuré s'affichera ici après le traitement de l'IA...</span>
             )}
           </div>
         </div>
@@ -338,7 +321,7 @@ export default function PVGeneratorPage() {
       </div>
 
       {/* Safety Info Note */}
-      <div className="p-4 bg-slate-900/20 border border-slate-850 rounded-2xl flex gap-3 text-xs text-slate-500 items-start">
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 rounded-2xl flex gap-3 text-xs text-slate-600 dark:text-slate-500 items-start transition-colors duration-300">
         <AlertCircle className="w-4.5 h-4.5 text-slate-500 shrink-0 mt-0.5" />
         <div>
           Les enregistrements audio sont traités confidentiellement à l'aide du modèle Whisper (Groq Cloud API). Les comptes-rendus et livrables PDF officiels générés respectent la charte graphique réglementaire de l'entreprise.

@@ -9,6 +9,7 @@ from data.instances_store import (
     add_committee,
     add_meeting_to_committee,
     get_instances_tree,
+    delete_meeting_from_committee
 )
 from models.api_schemas import ComiteCreate, InstanceTreeResponse, ReunionSousComiteCreate
 
@@ -32,8 +33,8 @@ async def creer_instance(payload: dict):
     type_entite = payload.get("type", "comite")
 
     if type_entite == "comite":
-        modele = ComiteCreate(**{k: v for k, v in payload.items() if k in ("nom", "description")})
-        comite = add_committee(modele.nom, modele.description)
+        modele = ComiteCreate(**{k: v for k, v in payload.items() if k in ("nom", "description", "membres")})
+        comite = add_committee(modele.nom, modele.description, modele.membres)
         return {"message": "Comité créé avec succès", "comite": comite}
 
     if type_entite == "reunion":
@@ -51,3 +52,11 @@ async def creer_instance(payload: dict):
         return {"message": "Réunion ajoutée au comité", "reunion": reunion}
 
     raise HTTPException(status_code=400, detail="Type invalide : utiliser 'comite' ou 'reunion'")
+
+@router.delete("/{committee_id}/meetings/{meeting_id}")
+async def supprimer_reunion(committee_id: str, meeting_id: str):
+    """Supprime une réunion d'un comité."""
+    success = delete_meeting_from_committee(committee_id, meeting_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Comité ou réunion introuvable")
+    return {"message": "Réunion supprimée avec succès"}

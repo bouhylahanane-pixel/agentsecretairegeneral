@@ -7,76 +7,31 @@ import KPICards from '../components/dashboard/KPICards';
 import ActionChart from '../components/dashboard/ActionChart';
 import { DashboardSkeleton } from '../components/ui/Skeleton';
 import { API_URL } from '../config';
-import type { Meeting, PVHistory, EmailAnalysis } from '../types';
-
-interface IncomingRequest {
-  id: string;
-  from: string;
-  subject: string;
-  date: string;
-  urgency: string;
-  email_brut: string;
-}
+import type { Meeting, PVHistory, EmailAnalysis, DemandeEntrante } from '../types';
 
 export default function Dashboard() {
   const { stats, chartData, loading: analyticsLoading, refresh } = useAnalytics();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [history, setHistory] = useState<PVHistory[]>([]);
   const [loadingExtra, setLoadingExtra] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<IncomingRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<DemandeEntrante | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<EmailAnalysis | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const { setBackendOffline } = useApiError();
-
-  const incomingRequests: IncomingRequest[] = [
-    {
-      id: 'req-01',
-      from: 'legal@entreprise.ma',
-      subject: 'Notification de mise en conformité Loi 17-95 sur les SA',
-      date: '03 Juin 14:22',
-      urgency: 'LEGAL COMPLIANCE',
-      email_brut:
-        'Madame la Secrétaire Générale,\n\nConformément à la loi 17-95 relative aux sociétés anonymes, nous vous prions de transmettre les statuts mis à jour et le registre des décisions du Conseil avant le 15 juin.\n\nCordialement,\nService Juridique',
-    },
-    {
-      id: 'req-02',
-      from: 'mohamed.alami@logistique.ma',
-      subject: "Demande d'achat de licences logicielles CAO pour l'équipe technique",
-      date: '03 Juin 11:05',
-      urgency: 'ROUTINE',
-      email_brut:
-        'Bonjour,\n\nNous sollicitons l\'achat de 5 licences CAO pour le département technique. Budget estimé : 45 000 MAD. Merci de valider pour imputation budgétaire.\n\nMohamed Alami',
-    },
-    {
-      id: 'req-03',
-      from: 'secretaire-general@finances.gov.ma',
-      subject: 'Convocations audit fiscal obligatoire exercice 2025',
-      date: '02 Juin 16:45',
-      urgency: 'HIGH URGENCY',
-      email_brut:
-        'Notification officielle : audit de contrôle fiscal de l\'administration. Délai impératif de 15 jours pour fournir l\'ensemble des PV, registres et pièces comptables de l\'exercice 2025.\n\nDirection des Finances',
-    },
-    {
-      id: 'req-04',
-      from: 'sanaa.rh@entreprise.ma',
-      subject: "Fiches d'objectifs et sujets de stage des 4 stagiaires IA",
-      date: '02 Juin 09:30',
-      urgency: 'ROUTINE',
-      email_brut:
-        'Bonjour Meryem,\n\nVeuillez trouver ci-joint les fiches d\'objectifs des stagiaires (Meryem, Saad, etc.). À aborder lors du point de coordination hebdomadaire.\n\nSanaa — RH',
-    },
-  ];
+  const [incomingRequests, setIncomingRequests] = useState<DemandeEntrante[]>([]);
 
   const loadExtraData = async () => {
     setLoadingExtra(true);
     try {
-      const [meetingsRes, historyRes] = await Promise.all([
+      const [meetingsRes, historyRes, demandesRes] = await Promise.all([
         api.getMeetings(),
         api.getPVHistory(),
+        api.getDemandes(),
       ]);
       setMeetings(meetingsRes);
       setHistory(historyRes);
+      setIncomingRequests(demandesRes);
       setBackendOffline(false);
     } catch (err: any) {
       console.error('Erreur lors du chargement des données supplémentaires:', err);
@@ -103,7 +58,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleAnalyze = async (req: IncomingRequest) => {
+  const handleAnalyze = async (req: DemandeEntrante) => {
     setSelectedRequest(req);
     setAnalysisResult(null);
     setAnalysisError(null);
@@ -146,14 +101,13 @@ export default function Dashboard() {
     }
   };
 
-  const totalMeetingsCount = meetings.length;
-  const pendingMinutesCount = Math.max(0, meetings.length - history.length);
+  const totalRequestsCount = stats?.total_requests ?? 0;
+  const urgentRequestsCount = stats?.total_urgencies ?? 0;
   const extractedDecisionsCount = history.reduce(
     (acc, h) => acc + (h.decisions?.length || 0),
     0
   );
-  const averageTime = stats?.average_response_time_ms ?? 0;
-  const aiEfficiencyPercentage = '98.5%';
+  const averageTime = stats?.average_response_time_ms ? `${stats.average_response_time_ms} ms` : '0 ms';
 
   const sortedUpcomingEvents = [...meetings]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -174,52 +128,51 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-100">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto text-slate-800 dark:text-slate-100 transition-colors duration-300">
       
       {/* Title & Refresh Button */}
-      <div className="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800/80 pb-4 transition-colors duration-300">
         <div>
-          <h2 className="text-base font-extrabold text-white tracking-tight uppercase">
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight uppercase transition-colors duration-300">
             Gouvernance & Analytics Overview
           </h2>
-          <p className="text-[11px] text-slate-400 font-semibold mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 transition-colors duration-300">
             Tableau de bord intelligent de pilotage du Secrétariat Général.
           </p>
         </div>
         <button
           type="button"
           onClick={handleRefresh}
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-800 bg-slate-900/60 hover:bg-slate-850 text-slate-350 rounded-xl text-[11px] font-bold active:scale-95 transition-all shadow-md shadow-indigo-950/20"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-600 dark:text-slate-350 rounded-xl text-[11px] font-bold active:scale-95 transition-all shadow-sm dark:shadow-md dark:shadow-indigo-950/20"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           Actualiser
         </button>
       </div>
 
-      {/* KPI stats display */}
       <KPICards
-        totalMeetings={totalMeetingsCount}
-        pendingMinutes={pendingMinutesCount}
+        totalRequests={totalRequestsCount}
+        urgentRequests={urgentRequestsCount}
         extractedDecisions={extractedDecisionsCount}
-        aiEfficiency={aiEfficiencyPercentage}
+        averageResponseTime={averageTime}
       />
 
       {/* Middle Layout section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left: Demandes Entrantes */}
-        <div className="lg:col-span-8 bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
-          <div className="flex justify-between items-center border-b border-slate-800/60 pb-3">
+        <div className="lg:col-span-8 bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg space-y-4 transition-colors duration-300">
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800/60 pb-3 transition-colors duration-300">
             <div>
-              <h3 className="text-xs font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                <Mail className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2 transition-colors duration-300">
+                <Mail className="w-4 h-4 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
                 Demandes Entrantes & Urgence Classifier (LLaMA 3.3)
               </h3>
-              <p className="text-[10px] text-slate-450 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-500 dark:text-slate-450 font-semibold mt-0.5 transition-colors duration-300">
                 Mails entrants analysés et catégorisés automatiquement.
               </p>
             </div>
-            <span className="text-[9px] font-bold text-indigo-400 bg-indigo-950/30 px-2 py-0.5 rounded-full border border-indigo-500/20 font-mono">
+            <span className="text-[9px] font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/20 font-mono transition-colors duration-300">
               LLaMA 3.3 Active
             </span>
           </div>
@@ -227,7 +180,7 @@ export default function Dashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-800 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-wider text-slate-500 font-bold transition-colors duration-300">
                   <th className="pb-3 pl-2">Date</th>
                   <th className="pb-3">Expéditeur</th>
                   <th className="pb-3">Sujet du Message</th>
@@ -235,16 +188,16 @@ export default function Dashboard() {
                   <th className="pb-3 text-right pr-2">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-850 transition-colors duration-300">
                 {incomingRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-900/25 transition-colors">
-                    <td className="py-3 pl-2 font-mono text-slate-500 font-semibold text-[10px]">
+                  <tr key={req.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/25 transition-colors duration-300">
+                    <td className="py-3 pl-2 font-mono text-slate-500 font-semibold text-[10px] transition-colors duration-300">
                       {req.date}
                     </td>
-                    <td className="py-3 font-bold text-slate-300 truncate max-w-[120px]">
+                    <td className="py-3 font-bold text-slate-800 dark:text-slate-300 truncate max-w-[120px] transition-colors duration-300">
                       {req.from}
                     </td>
-                    <td className="py-3 text-slate-400 font-medium max-w-[200px] truncate">
+                    <td className="py-3 text-slate-600 dark:text-slate-400 font-medium max-w-[200px] truncate transition-colors duration-300">
                       {req.subject}
                     </td>
                     <td className="py-3">
@@ -258,10 +211,10 @@ export default function Dashboard() {
                       <button
                         type="button"
                         onClick={() => handleAnalyze(req)}
-                        className="inline-flex items-center gap-0.5 text-[10px] font-black tracking-wider uppercase text-indigo-400 hover:text-indigo-300 bg-indigo-950/30 hover:bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-550/20 transition-all active:scale-95"
+                        className="inline-flex items-center gap-0.5 text-[10px] font-black tracking-wider uppercase text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 dark:hover:bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-550/20 transition-all active:scale-95"
                       >
                         Analyser
-                        <ChevronRight className="w-3 h-3 text-indigo-400" />
+                        <ChevronRight className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                       </button>
                     </td>
                   </tr>
@@ -275,25 +228,25 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Notifications sidebar pane */}
-          <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg">
-            <div className="flex items-center gap-2 border-b border-slate-800/60 pb-3 mb-4">
-              <BellRing className="w-4 h-4 text-indigo-400" />
+          <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg transition-colors duration-300">
+            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800/60 pb-3 mb-4 transition-colors duration-300">
+              <BellRing className="w-4 h-4 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
               <div>
-                <h3 className="text-xs font-bold text-white tracking-wide uppercase">Dernières Alertes</h3>
-                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Alertes critiques détectées.</p>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide uppercase transition-colors duration-300">Dernières Alertes</h3>
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5 transition-colors duration-300">Alertes critiques détectées.</p>
               </div>
             </div>
             
             <div className="space-y-3">
-              <div className="p-3 bg-rose-950/15 border border-rose-500/10 rounded-xl">
-                <p className="text-xs font-semibold text-rose-350 leading-relaxed">
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/15 border border-rose-200 dark:border-rose-500/10 rounded-xl transition-colors duration-300">
+                <p className="text-xs font-semibold text-rose-700 dark:text-rose-350 leading-relaxed transition-colors duration-300">
                   High Urgency request detected: audit fiscal obligatoire exercice 2025.
                 </p>
                 <span className="text-[9px] font-bold text-slate-500 mt-1.5 block">Il y a 5 min</span>
               </div>
               
-              <div className="p-3 bg-emerald-950/15 border border-emerald-500/10 rounded-xl">
-                <p className="text-xs font-semibold text-emerald-350 leading-relaxed">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/15 border border-emerald-200 dark:border-emerald-500/10 rounded-xl transition-colors duration-300">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-350 leading-relaxed transition-colors duration-300">
                   Minutes generated via ReportLab tool: PV_Conseil_2026-06-03.pdf.
                 </p>
                 <span className="text-[9px] font-bold text-slate-500 mt-1.5 block">Il y a 30 min</span>
@@ -302,34 +255,34 @@ export default function Dashboard() {
           </div>
 
           {/* Upcoming Events (Calendar placeholder) */}
-          <div className="bg-slate-900/30 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-lg">
-            <div className="flex items-center gap-2 border-b border-slate-800/60 pb-3 mb-4">
-              <Calendar className="w-4 h-4 text-indigo-400" />
+          <div className="bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm dark:shadow-lg transition-colors duration-300">
+            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800/60 pb-3 mb-4 transition-colors duration-300">
+              <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400 transition-colors duration-300" />
               <div>
-                <h3 className="text-xs font-bold text-white tracking-wide uppercase">Upcoming Events</h3>
-                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide uppercase transition-colors duration-300">Upcoming Events</h3>
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5 transition-colors duration-300">
                   Calendrier prévisionnel des instances.
                 </p>
               </div>
             </div>
 
-            <div className="relative border-l border-slate-800 pl-4 ml-2.5 space-y-5">
+            <div className="relative border-l border-slate-200 dark:border-slate-800 pl-4 ml-2.5 space-y-5 transition-colors duration-300">
               {sortedUpcomingEvents.map((evt) => (
                 <div key={evt.id} className="relative group">
-                  <span className="absolute -left-[21.5px] top-1.5 w-3 h-3 rounded-full bg-slate-950 border-2 border-indigo-500 group-hover:bg-indigo-400 transition-colors" />
+                  <span className="absolute -left-[21.5px] top-1.5 w-3 h-3 rounded-full bg-white dark:bg-slate-950 border-2 border-indigo-500 group-hover:bg-indigo-400 transition-colors" />
                   <div>
-                    <span className="text-[9px] font-mono font-bold text-indigo-400 bg-indigo-950/30 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                    <span className="text-[9px] font-mono font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-500/20 transition-colors duration-300">
                       {evt.date}
                     </span>
-                    <h4 className="text-xs font-bold text-slate-200 mt-1.5">{evt.titre}</h4>
-                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1.5 transition-colors duration-300">{evt.titre}</h4>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5 transition-colors duration-300">
                       Salle de Conseil • Début à {evt.heure}
                     </p>
                   </div>
                 </div>
               ))}
               {sortedUpcomingEvents.length === 0 && (
-                <div className="text-center py-6 text-slate-550 italic text-xs">
+                <div className="text-center py-6 text-slate-500 dark:text-slate-550 italic text-xs transition-colors duration-300">
                   Aucun événement planifié.
                 </div>
               )}
@@ -346,23 +299,23 @@ export default function Dashboard() {
 
       {/* LLaMA Analyzer Modal Dialog */}
       {selectedRequest && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 shadow-2xl max-w-lg w-full rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-colors duration-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl max-w-lg w-full rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto transition-colors duration-300">
             
             {/* Modal header */}
-            <div className="flex justify-between items-center border-b border-slate-850 pb-3">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-3 transition-colors duration-300">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                <span className="p-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors duration-300">
                   <Sparkles className="w-4 h-4" />
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-white">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white transition-colors duration-300">
                   Classification IA LLaMA 3.3
                 </span>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="p-1 bg-slate-950/40 hover:bg-slate-850 rounded-lg text-slate-400 hover:text-slate-200 transition-all border border-slate-800"
+                className="p-1 bg-slate-50 dark:bg-slate-950/40 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all border border-slate-200 dark:border-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -371,72 +324,72 @@ export default function Dashboard() {
             {/* Modal body */}
             <div className="space-y-4">
               <div>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Expéditeur</span>
-                <p className="text-xs font-bold text-slate-250">{selectedRequest.from}</p>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1 transition-colors duration-300">Expéditeur</span>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-250 transition-colors duration-300">{selectedRequest.from}</p>
               </div>
 
               <div>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Sujet du Message</span>
-                <p className="text-xs font-semibold text-slate-400">{selectedRequest.subject}</p>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1 transition-colors duration-300">Sujet du Message</span>
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 transition-colors duration-300">{selectedRequest.subject}</p>
               </div>
 
-              <div className="border-t border-slate-850 pt-3">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Rapport d'analyse IA</span>
+              <div className="border-t border-slate-100 dark:border-slate-850 pt-3 transition-colors duration-300">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-2 transition-colors duration-300">Rapport d'analyse IA</span>
                 
                 {analysisLoading ? (
                   <div className="p-6 flex flex-col items-center gap-3">
-                    <Loader2 className="w-7 h-7 text-indigo-500 animate-spin" />
-                    <p className="text-xs font-bold text-slate-400 animate-pulse uppercase tracking-wider">
+                    <Loader2 className="w-7 h-7 text-indigo-600 dark:text-indigo-500 animate-spin transition-colors duration-300" />
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 animate-pulse uppercase tracking-wider transition-colors duration-300">
                       Classification et recommandations...
                     </p>
                     <div className="w-full space-y-2 mt-4">
-                      <div className="h-2.5 bg-slate-800/60 rounded animate-pulse" />
-                      <div className="h-2.5 bg-slate-800/60 rounded animate-pulse w-4/5" />
-                      <div className="h-2.5 bg-slate-800/60 rounded animate-pulse w-3/5" />
+                      <div className="h-2.5 bg-slate-200 dark:bg-slate-800/60 rounded animate-pulse transition-colors duration-300" />
+                      <div className="h-2.5 bg-slate-200 dark:bg-slate-800/60 rounded animate-pulse w-4/5 transition-colors duration-300" />
+                      <div className="h-2.5 bg-slate-200 dark:bg-slate-800/60 rounded animate-pulse w-3/5 transition-colors duration-300" />
                     </div>
                   </div>
                 ) : analysisError ? (
-                  <div className="p-3.5 bg-rose-950/20 border border-rose-550/30 rounded-xl text-xs text-rose-350 flex items-start gap-2.5">
-                    <AlertCircle className="w-4.5 h-4.5 text-rose-455 shrink-0 mt-0.5" />
+                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-550/30 rounded-xl text-xs text-rose-700 dark:text-rose-350 flex items-start gap-2.5 transition-colors duration-300">
+                    <AlertCircle className="w-4.5 h-4.5 text-rose-600 dark:text-rose-455 shrink-0 mt-0.5 transition-colors duration-300" />
                     <span>{analysisError}</span>
                   </div>
                 ) : analysisResult ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <span className={`px-2.5 py-0.5 text-[9px] rounded-full border font-bold ${
+                      <span className={`px-2.5 py-0.5 text-[9px] rounded-full border font-bold transition-colors duration-300 ${
                         analysisResult.classification === 'Urgent' 
-                          ? 'bg-rose-950/40 border-rose-500/30 text-rose-400'
-                          : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-450'
+                          ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400'
+                          : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-450'
                       }`}>
                         {analysisResult.classification.toUpperCase()}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono">
+                      <span className="text-[10px] text-slate-500 font-mono transition-colors duration-300">
                         Score Confiance : {(analysisResult.score_confiance * 100).toFixed(0)}%
                       </span>
                     </div>
 
-                    <div className="p-4 bg-slate-950/70 border border-slate-850 rounded-xl text-xs leading-relaxed text-slate-300 font-medium">
-                      <p className="font-black text-slate-200 mb-2">{analysisResult.resume}</p>
-                      <p className="whitespace-pre-line text-slate-400">{analysisResult.analyse_detaillee}</p>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-850 rounded-xl text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium transition-colors duration-300">
+                      <p className="font-black text-slate-900 dark:text-slate-200 mb-2 transition-colors duration-300">{analysisResult.resume}</p>
+                      <p className="whitespace-pre-line text-slate-600 dark:text-slate-400 transition-colors duration-300">{analysisResult.analyse_detaillee}</p>
                     </div>
 
                     <div>
-                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Actions recommandées</span>
-                      <ul className="list-disc pl-4 text-xs text-slate-350 space-y-1.5">
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-2 transition-colors duration-300">Actions recommandées</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-700 dark:text-slate-350 space-y-1.5 transition-colors duration-300">
                         {analysisResult.actions_recommandees.map((action, i) => (
                           <li key={i}>{action}</li>
                         ))}
                       </ul>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 border-t border-slate-850 pt-3 text-xs">
+                    <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-850 pt-3 text-xs transition-colors duration-300">
                       <div>
-                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">Délai suggéré</span>
-                        <span className="text-slate-300 font-bold">{analysisResult.delai_reponse_suggere}</span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block transition-colors duration-300">Délai suggéré</span>
+                        <span className="text-slate-800 dark:text-slate-300 font-bold transition-colors duration-300">{analysisResult.delai_reponse_suggere}</span>
                       </div>
                       <div>
-                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">Modèle LLM</span>
-                        <span className="text-slate-300 font-bold font-mono">{analysisResult.moteur}</span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block transition-colors duration-300">Modèle LLM</span>
+                        <span className="text-slate-800 dark:text-slate-300 font-bold font-mono transition-colors duration-300">{analysisResult.moteur}</span>
                       </div>
                     </div>
                   </div>
@@ -445,11 +398,11 @@ export default function Dashboard() {
             </div>
 
             {/* Modal actions */}
-            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-850">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-850 transition-colors duration-300">
               <button
                 type="button"
                 onClick={closeModal}
-                className="px-4 py-2 border border-slate-800 bg-slate-955 hover:bg-slate-850 text-slate-400 hover:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm"
+                className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm"
               >
                 Fermer
               </button>

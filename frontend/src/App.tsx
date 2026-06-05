@@ -12,6 +12,9 @@ import Dashboard from './pages/DashboardPage';
 import PVGenerator from './pages/PVGeneratorPage';
 import Meetings from './pages/MeetingsPage';
 import DocumentSafeAndLogsPage from './pages/DocumentSafeAndLogsPage';
+import DocumentGeneratorPage from './pages/DocumentGeneratorPage';
+import ChatPage from './pages/ChatPage';
+import AgentChat from './pages/AgentChat';
 
 // Ce composant protège les pages de ton site
 function NavigationGuard({ children }: { children: React.ReactNode }) {
@@ -38,9 +41,12 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/" element={<NavigationGuard><Dashboard /></NavigationGuard>} />
+      <Route path="/document-generation" element={<NavigationGuard><DocumentGeneratorPage /></NavigationGuard>} />
       <Route path="/meetings" element={<NavigationGuard><Meetings /></NavigationGuard>} />
       <Route path="/pv-generator" element={<NavigationGuard><PVGenerator /></NavigationGuard>} />
       <Route path="/document-safe-and-logs" element={<NavigationGuard><DocumentSafeAndLogsPage /></NavigationGuard>} />
+      <Route path="/chat" element={<NavigationGuard><ChatPage /></NavigationGuard>} />
+      <Route path="/agent-chat" element={<NavigationGuard><AgentChat /></NavigationGuard>} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

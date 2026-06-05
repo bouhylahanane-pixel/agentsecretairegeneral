@@ -17,6 +17,7 @@ _instances_tree: dict[str, Any] = {
             "nom": "Comité d'Audit & Conformité",
             "type": "comite",
             "description": "Supervision réglementaire et contrôles internes",
+            "membres": "Sanaa, Ahmed, Meryem",
             "reunions": [
                 {
                     "id": "reu-audit-1",
@@ -33,6 +34,7 @@ _instances_tree: dict[str, Any] = {
             "nom": "Comité Stratégique Digital",
             "type": "comite",
             "description": "Pilotage transformation numérique du Secrétariat",
+            "membres": "Meryem, Saad, Sanaa, Ahmed",
             "reunions": [
                 {
                     "id": "reu-strat-1",
@@ -62,13 +64,14 @@ def get_instances_tree() -> dict[str, Any]:
     return copy.deepcopy(_instances_tree)
 
 
-def add_committee(nom: str, description: str = "") -> dict[str, Any]:
+def add_committee(nom: str, description: str = "", membres: str = "") -> dict[str, Any]:
     """Crée un nouveau comité dans l'arborescence."""
     comite = {
         "id": f"com-{uuid4().hex[:8]}",
         "nom": nom.strip(),
         "type": "comite",
         "description": description.strip(),
+        "membres": membres.strip(),
         "reunions": [],
     }
     _instances_tree["committees"].append(comite)
@@ -107,3 +110,14 @@ def find_committee(committee_id: str) -> dict[str, Any] | None:
         if comite["id"] == committee_id:
             return copy.deepcopy(comite)
     return None
+
+def delete_meeting_from_committee(committee_id: str, meeting_id: str) -> bool:
+    """Supprime une réunion d'un comité."""
+    for comite in _instances_tree["committees"]:
+        if comite["id"] == committee_id:
+            for idx, reunion in enumerate(comite["reunions"]):
+                if reunion["id"] == meeting_id:
+                    del comite["reunions"][idx]
+                    _touch_meta()
+                    return True
+    return False

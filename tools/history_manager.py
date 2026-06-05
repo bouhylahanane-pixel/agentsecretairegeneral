@@ -34,7 +34,7 @@ def save_history(data):
     conn.commit()
     conn.close()
     
-    print(f"📊 Log enregistré en BDD : [{priorite}] {action_requise} par {utilisateur}")
+    print(f"Log enregistré en BDD : [{priorite}] {action_requise} par {utilisateur}")
 
 # ==========================================
 # 📊 Fonctions pour ton Tableau de Bord React
