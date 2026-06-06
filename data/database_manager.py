@@ -1,5 +1,8 @@
 import sqlite3
 import os
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "database.db")
 
@@ -54,7 +57,11 @@ def init_db():
         "heures_travail": "INTEGER",
         "disponibilite": "TEXT",
         "cin": "TEXT",
-        "mot_de_passe": "TEXT"
+        "mot_de_passe": "TEXT",
+        "is_active": "INTEGER DEFAULT 1",
+        "created_at": "TEXT DEFAULT ''",
+        "updated_at": "TEXT DEFAULT ''",
+        "last_login": "TEXT"
     }
     
     cursor.execute("PRAGMA table_info(employes)")
@@ -133,19 +140,20 @@ def insérer_employes_test():
     cursor.execute("DELETE FROM employes")
     
     # Liste élargie et enrichie des employés avec les vrais e-mails de test
+    hashed_password = pwd_context.hash("secretariat2026")
     employes = [
         # Contrats de 40h/semaine
-        ("souhaila", "Ben", "souhaben535@gmail.com", "+212 6 61 11 22 33", "Tanger, Place Id厂商 (Iberia)", "Secrétaire Générale", "Direction", "2023-05-10", 40, "08:30-16:30", "secretariat2026"),
-        ("Mohamed", "Alami", "mohamed.tech@entreprise.ma", "+212 6 65 44 33 22", "Tanger, Route de Tétouan", "Responsable Logistique", "Logistique", "2022-03-20", 40, "08:30-16:30", "secretariat2026"),
-        ("Karima", "Tazi", "karima.fin@entreprise.ma", "+212 6 67 11 22 44", "Tanger, Malabata", "Directrice Financière", "Finance", "2021-11-15", 40, "08:30-16:30", "secretariat2026"),
-        ("Omar", "Mansouri", "omar.com@entreprise.ma", "+212 6 69 55 66 77", "Tanger, Quartier California", "Responsable Commercial", "Commercial", "2023-08-12", 40, "08:30-16:30", "secretariat2026"),
+        ("souhaila", "Ben", "souhaben535@gmail.com", "+212 6 61 11 22 33", "Tanger, Place Id厂商 (Iberia)", "admin", "Direction", "2023-05-10", 40, "08:30-16:30", hashed_password),
+        ("Mohamed", "Alami", "mohamed.tech@entreprise.ma", "+212 6 65 44 33 22", "Tanger, Route de Tétouan", "employee", "Logistique", "2022-03-20", 40, "08:30-16:30", hashed_password),
+        ("Karima", "Tazi", "karima.fin@entreprise.ma", "+212 6 67 11 22 44", "Tanger, Malabata", "employee", "Finance", "2021-11-15", 40, "08:30-16:30", hashed_password),
+        ("Omar", "Mansouri", "omar.com@entreprise.ma", "+212 6 69 55 66 77", "Tanger, Quartier California", "employee", "Commercial", "2023-08-12", 40, "08:30-16:30", hashed_password),
 
         # Contrats de 35h/semaine
-        ("Ahmed", "Ahmadi", "ahmed.drh@entreprise.ma", "+212 6 61 23 45 67", "Tanger, Branes", "Directeur RH", "Ressources Humaines", "2024-01-15", 35, "09:00-16:00", "secretariat2026"),
-        ("Sanaa", "El Amrani", "sanaa.rh@entreprise.ma", "+212 6 62 98 76 54", "Tanger, Boukhalef", "Chargée de Recrutement", "Ressources Humaines", "2024-11-01", 35, "09:00-16:00", "secretariat2026"),
-        ("Hanane", "Bouhyla", "hanane.bouhyla@entreprise.ma", "+212 6 63 99 88 77", "Tanger, Centre Ville", "Développeur Senior", "Technique", "2024-06-01", 35, "09:00-16:00", "secretariat2026"),
-        ("Amine", "Benjelloun", "amine.sys@entreprise.ma", "+212 6 63 45 12 89", "Tanger, Mesnana", "Administrateur Système", "Technique", "2025-05-10", 35, "09:00-16:00", "secretariat2026"),
-        ("Layla", "Kadiri", "layla.mkt@entreprise.ma", "+212 6 68 00 11 22", "Tanger, Val Fleuri", "Social Media Manager", "Marketing", "2025-02-02", 35, "09:00-16:00", "secretariat2026")
+        ("Ahmed", "Ahmadi", "ahmed.drh@entreprise.ma", "+212 6 61 23 45 67", "Tanger, Branes", "employee", "Ressources Humaines", "2024-01-15", 35, "09:00-16:00", hashed_password),
+        ("Sanaa", "El Amrani", "sanaa.rh@entreprise.ma", "+212 6 62 98 76 54", "Tanger, Boukhalef", "employee", "Ressources Humaines", "2024-11-01", 35, "09:00-16:00", hashed_password),
+        ("Hanane", "Bouhyla", "hanane.bouhyla@entreprise.ma", "+212 6 63 99 88 77", "Tanger, Centre Ville", "secretaire", "Technique", "2024-06-01", 35, "09:00-16:00", hashed_password),
+        ("Amine", "Benjelloun", "amine.sys@entreprise.ma", "+212 6 63 45 12 89", "Tanger, Mesnana", "employee", "Technique", "2025-05-10", 35, "09:00-16:00", hashed_password),
+        ("Layla", "Kadiri", "layla.mkt@entreprise.ma", "+212 6 68 00 11 22", "Tanger, Val Fleuri", "employee", "Marketing", "2025-02-02", 35, "09:00-16:00", hashed_password)
     ]
     
     # Note : J'ai gardé ta structure exacte d'employés. J'ai retiré temporairement 

@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from fastapi import FastAPI, Request, File, UploadFile, HTTPException
+from fastapi import FastAPI, Request, File, UploadFile, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -39,7 +39,7 @@ app.add_middleware(
 )
 
 # 3. Routeurs API modulaires (/api/*)
-from api.routers import analyze, instances, minutes, tasks, auth, documents
+from api.routers import analyze, instances, minutes, tasks, auth, documents, document_requests
 
 app.include_router(instances.router)
 app.include_router(analyze.router)
@@ -47,6 +47,12 @@ app.include_router(auth.router)
 app.include_router(minutes.router)
 app.include_router(tasks.router)
 app.include_router(documents.router)
+app.include_router(document_requests.router)
+
+from api.routers import users
+app.include_router(users.router)
+
+from api.routers.auth import get_current_user, require_roles
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -56,12 +62,14 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 from data.database_manager import init_db
 from tools.rag_engine import init_rag_table
+from api.routers.document_requests import init_document_requests_table
 
 @app.on_event("startup")
 async def startup_event():
     print("Initialisation de la base de données...")
     init_db()
     init_rag_table()
+    init_document_requests_table()
     print("Bases de données prêtes.")
 
 
@@ -78,19 +86,19 @@ async def health():
 # 📊 ROUTES ANALYTICS
 # ==========================================
 @app.get("/analytics/stats", tags=["Analytics"])
-async def get_global_stats():
+async def get_global_stats(current_user: dict = Depends(require_roles(["admin", "secretaire", "employee", "stagiaire"]))):
     """Retourne les compteurs clés (Total demandes, Urgences, Temps moyen)."""
     return get_analytics_stats()
 
 
 @app.get("/analytics/chart", tags=["Analytics"])
-async def get_chart_data():
+async def get_chart_data(current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Retourne les données agrégées pour le graphique de répartition des actions."""
     return get_activity_by_action()
 
 
 @app.get("/analytics/logs", tags=["Analytics"])
-async def get_raw_logs():
+async def get_raw_logs(current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Retourne la liste complète des logs pour alimenter ton tableau de données (React/Streamlit)."""
     return get_all_logs()
 
@@ -99,7 +107,7 @@ async def get_raw_logs():
 # 🤖 ROUTES DE L'AGENT IA (Synchronisée avec app_demo.py)
 # ==========================================
 @app.post("/agent/process", tags=["Agent"])
-async def process_agent(data: dict):
+async def process_agent(data: dict, current_user: dict = Depends(require_roles(["admin", "secretaire", "employee"]))):
     """
     Traite la demande utilisateur envoyée depuis l'interface Streamlit.
     Gère la flexibilité entre un message unique et un historique complet.
@@ -122,7 +130,7 @@ async def process_agent(data: dict):
 
 
 @app.post("/agent/generate-pv", tags=["Agent"])
-async def generate_pv(request: Request):
+async def generate_pv(request: Request, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """
     Version optimisée : Nettoie les erreurs phonétiques (critérium, Southrimlit)
     et attribue correctement les tâches au narrateur (Meryem).
@@ -306,7 +314,7 @@ async def generate_pv(request: Request):
 # 🆕 OPTION 2 : NOUVELLE ROUTE SÉCURISÉE POUR L'IMPORTATION DE FICHIERS AUDIO
 # =========================================================================
 @app.post("/agent/upload-pv", tags=["Agent"])
-async def upload_pv(request: Request):
+async def upload_pv(request: Request, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """
     Cette route reçoit le fichier importé sous forme de flux binaire brut
     pour éviter les erreurs de parsing HTTP 'multipart' sur les fichiers longs.
@@ -499,7 +507,7 @@ async def upload_pv(request: Request):
 # 🎤 ROUTE DE TRANSCRIPTION SIMPLE
 # ==========================================
 @app.post("/agent/transcribe", tags=["Agent"])
-async def transcribe_audio(request: Request):
+async def transcribe_audio(request: Request, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Transcrit un flux audio brut en texte avec Whisper Groq."""
     temp_audio_path = "temp_transcribe_reunion.wav"
     try:
@@ -545,7 +553,7 @@ async def transcribe_audio(request: Request):
 
 
 @app.post("/agent/structure-text", tags=["Agent"])
-async def structure_text(data: dict):
+async def structure_text(data: dict, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """
     Reçoit un texte ou compte-rendu brut sous format JSON et utilise Llama 3.3
     pour extraire l'ordre du jour, les décisions, le plan d'action et générer le PV PDF officiel.
@@ -686,32 +694,32 @@ async def structure_text(data: dict):
 # 📋 ROUTES DE GESTION DES RÉUNIONS (SQL)
 # ==========================================
 @app.get("/meetings", tags=["Meetings"])
-async def get_meetings():
+async def get_meetings(current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Récupère la liste de toutes les réunions programmées."""
     return list_meetings()
 
 
 @app.get("/meetings/search/{date}", tags=["Meetings"])
-async def search_meetings(date: str):
+async def search_meetings(date: str, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Recherche les réunions prévues à une date spécifique."""
     return find_meeting_by_date(date)
 
 
 @app.delete("/meetings/delete/{meeting_id}", tags=["Meetings"])
-async def remove_meeting(meeting_id: int):
+async def remove_meeting(meeting_id: int, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Supprime une réunion du calendrier à partir de son ID."""
     return delete_meeting(meeting_id)
 
 
 # 🟢 NOUVELLE ROUTE : ACCÉDER À L'HISTORIQUE DES PV GENERES
 @app.get("/meetings/history", tags=["Meetings"])
-async def get_meetings_history():
+async def get_meetings_history(current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Récupère la liste de tous les procès-verbaux archivés en BDD."""
     return get_all_pv_history()
 
 
 @app.post("/meetings/create", tags=["Meetings"])
-async def plan_meeting(data: dict):
+async def plan_meeting(data: dict, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Crée une nouvelle réunion programmée dans le calendrier."""
     from tools.meeting import create_meeting
     resultat = create_meeting(data)
@@ -721,7 +729,7 @@ async def plan_meeting(data: dict):
 
 
 @app.post("/meetings/trigger-invitations", tags=["Meetings"])
-async def trigger_invitations(data: dict):
+async def trigger_invitations(data: dict, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Déclenche les invitations SMTP pour les réunions planifiées."""
     meeting_title = data.get("titre", "Réunion du Secrétariat")
     meeting_date = data.get("date", "2026-06-05")
@@ -755,28 +763,26 @@ async def trigger_invitations(data: dict):
 # 📁 ROUTE DE TÉLÉCHARGEMENT DE DOCUMENTS (PDF & MD)
 # ==========================================
 @app.get("/download/{file_path:path}", tags=["Documents"])
-def download_file(file_path: str):
+def download_file(file_path: str, current_user: dict = Depends(require_roles(["admin", "secretaire", "employee"]))):
     """Permet au frontend de télécharger les documents générés (PDF ou Markdown)."""
-    clean_path = os.path.basename(file_path) if "/" in file_path or "\\" in file_path else file_path
+    normalized_path = file_path.replace("\\", "/")
+    clean_path = os.path.basename(normalized_path)
 
     # Configuration dynamique du type de fichier selon son extension
     media_type = "text/markdown" if clean_path.endswith(".md") else "application/pdf"
 
-    if os.path.exists(clean_path):
-        return FileResponse(
-            path=clean_path,
-            filename=os.path.basename(clean_path),
-            media_type=media_type,
+    candidate_paths = [normalized_path, clean_path]
+    for candidate_path in candidate_paths:
+        if not candidate_path:
+            continue
+        if os.path.exists(candidate_path):
+            return FileResponse(
+                path=candidate_path,
+                filename=os.path.basename(candidate_path),
+                media_type=media_type,
             )
 
-    if os.path.exists(file_path):
-        return FileResponse(
-            path=file_path,
-            filename=os.path.basename(file_path),
-            media_type=media_type,
-        )
-
-    return {"error": f"Fichier introuvable : {file_path}"}
+    raise HTTPException(status_code=404, detail=f"Fichier introuvable : {file_path}")
 # ==========================================
 # 🌐 DYNAMIC FRONTEND DATA
 # ==========================================
@@ -785,7 +791,7 @@ from data.database_manager import DB_PATH
 import sqlite3
 
 @app.get("/api/demandes", tags=["Frontend"])
-async def get_demandes():
+async def get_demandes(current_user: dict = Depends(get_current_user)):
     """Récupère les demandes entrantes depuis la BDD."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -806,23 +812,66 @@ async def get_demandes():
     return resultat
 
 @app.get("/api/notifications", tags=["Frontend"])
-async def get_notifications():
-    """Récupère les notifications système depuis la BDD."""
+async def get_notifications(current_user: dict = Depends(get_current_user)):
+    """Récupère des notifications réelles depuis les demandes et les logs système."""
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT id, type_notif, text, time_str FROM notifications")
-    lignes = cursor.fetchall()
-    conn.close()
-    
-    resultat = []
-    for l in lignes:
-        resultat.append({
-            "id": l[0],
-            "type": l[1],
-            "text": l[2],
-            "time": l[3]
-        })
-    return resultat
+    notifications_reelles = []
+
+    try:
+        cursor.execute("""
+            SELECT id, requester_name, requester_email, document_type, status, created_at, updated_at
+            FROM document_requests
+            ORDER BY id DESC
+            LIMIT 8
+        """)
+        for row in cursor.fetchall():
+            status = row["status"]
+            notif_type = "info"
+            if status == "pending":
+                notif_type = "warning"
+            elif status in ("ready", "delivered"):
+                notif_type = "success"
+            elif status == "rejected":
+                notif_type = "error"
+
+            demandeur = row["requester_name"] or row["requester_email"] or "Utilisateur"
+            notifications_reelles.append({
+                "id": f"doc-{row['id']}",
+                "type": notif_type,
+                "text": f"Demande document #{row['id']} - {demandeur} - {row['document_type']} - {status}",
+                "time": row["updated_at"] or row["created_at"] or "",
+            })
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        cursor.execute("""
+            SELECT id, timestamp, utilisateur, action_requise, priorite
+            FROM logs_activite
+            ORDER BY id DESC
+            LIMIT 8
+        """)
+        for row in cursor.fetchall():
+            priorite = row["priorite"] or "Normale"
+            notif_type = "warning" if priorite == "Haute" else "info"
+            if "READY" in (row["action_requise"] or "") or "GENERATED" in (row["action_requise"] or ""):
+                notif_type = "success"
+            if "REJECTED" in (row["action_requise"] or "") or "ERROR" in (row["action_requise"] or ""):
+                notif_type = "error"
+            notifications_reelles.append({
+                "id": f"log-{row['id']}",
+                "type": notif_type,
+                "text": row["action_requise"] or "Activité système",
+                "time": row["timestamp"] or "",
+            })
+    except sqlite3.OperationalError:
+        pass
+    finally:
+        conn.close()
+
+    return notifications_reelles[:12]
 
 if __name__ == "__main__":
     import uvicorn

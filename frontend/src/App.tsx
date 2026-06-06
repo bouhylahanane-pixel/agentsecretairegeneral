@@ -1,38 +1,26 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { UserProvider, useUser } from './contexts/UserContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { ChatProvider } from './contexts/chatcontext';
 import { ApiErrorProvider, useApiError } from './contexts/ApiErrorContext';
 import { registerNetworkErrorCallback } from './api/client';
 import AppLayout from './components/layout/AppLayout';
+import ProtectedRoute from './auth/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 
-// Importation de nos pages fonctionnelles
+// Importation de nos pages V1
 import Dashboard from './pages/DashboardPage';
 import PVGenerator from './pages/PVGeneratorPage';
 import Meetings from './pages/MeetingsPage';
-import DocumentSafeAndLogsPage from './pages/DocumentSafeAndLogsPage';
 import DocumentGeneratorPage from './pages/DocumentGeneratorPage';
-import ChatPage from './pages/ChatPage';
-import AgentChat from './pages/AgentChat';
+import UsersPage from './pages/UsersPage';
+import HistoriquePage from './pages/HistoriquePage';
 
-// Ce composant protège les pages de ton site
-function NavigationGuard({ children }: { children: React.ReactNode }) {
-  const { user } = useUser();
-  
-  if (user) {
-    return <AppLayout>{children}</AppLayout>;
-  }
-  
-  return <LoginPage />;
-}
-
-// Sous-composant pour initialiser les hooks contextuels
 function AppContent() {
   const { triggerConnectionError } = useApiError();
 
   useEffect(() => {
-    // Enregistre le callback d'erreur réseau pour déclencher la modale/bannière globale
     registerNetworkErrorCallback(() => {
       triggerConnectionError();
     });
@@ -40,29 +28,43 @@ function AppContent() {
 
   return (
     <Routes>
-      <Route path="/" element={<NavigationGuard><Dashboard /></NavigationGuard>} />
-      <Route path="/document-generation" element={<NavigationGuard><DocumentGeneratorPage /></NavigationGuard>} />
-      <Route path="/meetings" element={<NavigationGuard><Meetings /></NavigationGuard>} />
-      <Route path="/pv-generator" element={<NavigationGuard><PVGenerator /></NavigationGuard>} />
-      <Route path="/document-safe-and-logs" element={<NavigationGuard><DocumentSafeAndLogsPage /></NavigationGuard>} />
-      <Route path="/chat" element={<NavigationGuard><ChatPage /></NavigationGuard>} />
-      <Route path="/agent-chat" element={<NavigationGuard><AgentChat /></NavigationGuard>} />
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* Routes Publiques */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+      {/* Redirections d'anciennes URLs vers les nouvelles V1 */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/document-generation" element={<Navigate to="/documents" replace />} />
+      <Route path="/pv-generator" element={<Navigate to="/proces-verbaux" replace />} />
+      <Route path="/meetings" element={<Navigate to="/reunions" replace />} />
+      <Route path="/document-safe-and-logs" element={<Navigate to="/historique" replace />} />
+
+      {/* Routes Protégées V1 */}
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<ProtectedRoute resource="dashboard"><Dashboard /></ProtectedRoute>} />
+        <Route path="/documents" element={<ProtectedRoute resource="documents"><DocumentGeneratorPage /></ProtectedRoute>} />
+        <Route path="/proces-verbaux" element={<ProtectedRoute resource="procesVerbaux"><PVGenerator /></ProtectedRoute>} />
+        <Route path="/reunions" element={<ProtectedRoute resource="reunions"><Meetings /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute resource="users"><UsersPage /></ProtectedRoute>} />
+        <Route path="/historique" element={<ProtectedRoute resource="historique"><HistoriquePage /></ProtectedRoute>} />
+      </Route>
+
+      {/* Fallback global */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
 
-// ATTENTION ICI : Le "export default" indispensable pour main.tsx !
 export default function App() {
   return (
     <Router>
-      <UserProvider>
+      <AuthProvider>
         <ChatProvider>
           <ApiErrorProvider>
             <AppContent />
           </ApiErrorProvider>
         </ChatProvider>
-      </UserProvider>
+      </AuthProvider>
     </Router>
   );
 }

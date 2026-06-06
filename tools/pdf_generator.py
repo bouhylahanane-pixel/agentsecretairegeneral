@@ -8,6 +8,7 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle # <-- Ajout de ParagraphStyle ici
 from reportlab.lib import colors
 from datetime import datetime
+from html import escape
 import os
 
 styles = getSampleStyleSheet()
@@ -21,6 +22,55 @@ if 'CustomBody' not in styles:
         leading=16,
         textColor=colors.HexColor('#2c3e50')
     ))
+if 'InstitutionSmall' not in styles:
+    styles.add(ParagraphStyle(
+        name='InstitutionSmall',
+        parent=styles['Normal'],
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor('#6b7280')
+    ))
+if 'InstitutionTitle' not in styles:
+    styles.add(ParagraphStyle(
+        name='InstitutionTitle',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=13,
+        textColor=colors.HexColor('#1e3d59'),
+        fontName='Helvetica-Bold'
+    ))
+
+
+def _safe(value, default="-"):
+    if value is None:
+        return default
+    text = str(value).strip()
+    return escape(text) if text else default
+
+
+def _html_lines(value):
+    return _safe(value, "").replace("\n", "<br/>")
+
+
+def _field(label, value):
+    value = _safe(value, "")
+    if not value:
+        return ""
+    return f"<b>{label} :</b> {value}<br/>"
+
+
+def _date_value(params):
+    return _safe(params.get("date") or datetime.today().strftime("%d/%m/%Y"))
+
+
+def _role_label(role):
+    labels = {
+        "admin": "administrateur",
+        "secretaire": "secrétaire",
+        "employee": "collaborateur",
+        "stagiaire": "stagiaire",
+    }
+    return labels.get(str(role or "").lower(), "collaborateur")
 
 # =========================
 # 📁 Création automatique des dossiers
@@ -44,6 +94,26 @@ def build_pdf(title, text, filename):
     content = []
 
     # En-tête professionnel
+    header = Table(
+        [[
+            Paragraph("<b>SMART AUTOMATION TECHNOLOGIES</b><br/>Secrétariat Général", styles["InstitutionTitle"]),
+            Paragraph("Document officiel<br/>Usage administratif interne", styles["InstitutionSmall"]),
+        ]],
+        colWidths=[330, 170],
+    )
+    header.setStyle(TableStyle([
+        ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor('#d7dee8')),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    content.append(header)
+    content.append(Spacer(1, 18))
+
     title_table = Table([[title]], colWidths=[500])
     title_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor('#1e3d59')),
@@ -55,14 +125,17 @@ def build_pdf(title, text, filename):
         ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
     ]))
     content.append(title_table)
-    content.append(Spacer(1, 20))
+    content.append(Spacer(1, 26))
 
     # Corps du document
     content.append(Paragraph(text, styles["CustomBody"]))
     content.append(Spacer(1, 30))
 
     # 🔥 CORRECTION : Encapsuler dans un Paragraph pour forcer l'interprétation des balises <b>
-    signature_text = Paragraph("<b>Signature et Cachet</b>", styles["CustomBody"])
+    signature_text = Paragraph(
+        "<b>Le Secrétariat Général</b><br/><br/><br/>Signature et cachet",
+        styles["CustomBody"]
+    )
     
     # Création du tableau d'alignement (à droite)
     signature_table = Table([["", signature_text]], colWidths=[320, 180])
@@ -77,7 +150,7 @@ def build_pdf(title, text, filename):
     # Footer automatique
     footer = Paragraph(
         "<font size='9' color='#7f8c8d'><i>"
-        "Document généré automatiquement par le système IA administratif — Confidentiel"
+        "Document généré par le système IA administratif du Secrétariat Général — sous réserve de validation et signature physiques."
         "</i></font>",
         styles["Normal"]
     )
@@ -151,19 +224,52 @@ def generate_attestation_presence_pdf(params, filename=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"outputs/attestations/attestation_presence_{nom}_{timestamp}.pdf"
 
-    if params.get("details"):
-        details_html = params.get("details").replace('\n', '<br/>')
-        text = f"""
-        <b>Nom de la personne présente :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
-        {details_html}<br/><br/>
-        <b>Date de l'émargement :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}
+    nom_personne = _safe(params.get("nom"), "Nom non précisé")
+    date_doc = _date_value(params)
+    role = _role_label(params.get("requester_role"))
+    poste = _safe(params.get("poste"), "")
+    departement = _safe(params.get("departement"), "")
+    email = _safe(params.get("requester_email"), "")
+    motif = _safe(params.get("motif"), "")
+    details = _html_lines(params.get("details"))
+
+    poste_clause = f" occupant la fonction de <b>{poste}</b>" if poste else ""
+    departement_clause = f" au sein du département <b>{departement}</b>" if departement else ""
+    motif_sentence = (
+        f" Cette attestation est établie à la demande de l'intéressé(e), pour le motif suivant : <b>{motif}</b>."
+        if motif else
+        " Cette attestation est établie à la demande de l'intéressé(e)."
+    )
+    observations = (
+        f"""
+        <br/><br/>
+        <font color='#1e3d59'><b>Observations administratives</b></font><br/>
+        {details}
         """
-    else:
-        text = f"""
-        <b>Nom de la personne présente :</b> {params.get("nom", "Nom non précisé")}<br/><br/>
-        <b>Date de l'émargement :</b> {params.get("date") or datetime.today().strftime("%Y-%m-%d")}<br/><br/>
-        <b>Lieu de présence :</b> {params.get("lieu", "-")}
-        """
+        if details else ""
+    )
+
+    text = f"""
+    <font color='#1e3d59'><b>Identification du bénéficiaire</b></font><br/>
+    {_field("Nom complet", nom_personne)}
+    {_field("Qualité", role)}
+    {_field("Poste", poste)}
+    {_field("Département", departement)}
+    {_field("Adresse e-mail professionnelle", email)}
+    <br/>
+    Le Secrétariat Général de Smart Automation Technologies atteste par la présente que
+    <b>{nom_personne}</b>, {role}{poste_clause}{departement_clause}, est régulièrement identifié(e)
+    dans les registres administratifs de l'organisation.
+    <br/><br/>
+    À la date d'émission du présent document, sa présence administrative est confirmée par les
+    éléments disponibles auprès du Secrétariat Général.
+    {motif_sentence}
+    <br/><br/>
+    La présente attestation est délivrée pour servir et valoir ce que de droit.
+    {observations}
+    <br/><br/>
+    Fait à Tanger, le <b>{date_doc}</b>.
+    """
     return build_pdf("ATTESTATION DE PRÉSENCE", text, filename)
 
 

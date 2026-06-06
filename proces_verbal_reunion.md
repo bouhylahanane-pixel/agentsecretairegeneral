@@ -1,18 +1,24 @@
 # 📝 PROCÈS-VERBAL DE RÉUNION
-**Date :** À définir
-**Participants :** Sanaa, Ahmed, Meryem
+**Date :** 2026-06-12
+**Participants :** Hanane Bouhyla, Yassine El Khadiri, Sara Benali, Amine Berrada
 
 ## 🎯 1. Ordre du jour
-Campagne d'aide pour les femmes des montagnes
+Organisation de la campagne de communication interne et amélioration du suivi administratif des documents
 
 ## 💬 2. Synthèse des échanges
-Meryem a initié une discussion sur les conditions difficiles vécues par les femmes marocaines dans les montagnes, ce qui a conduit l'association marocaine des femmes à décider de lancer une campagne d'aide pour ces femmes, De mon côté, Meryem a souligné l'importance de cette campagne pour améliorer la vie de ces femmes
+La réunion a porté sur l'amélioration de la coordination entre les services administratifs, notamment en ce qui concerne la gestion des documents. Il a été décidé de centraliser les demandes dans l'application pour réduire les échanges dispersés par email. Une campagne de communication interne sera préparée pour expliquer aux employés comment utiliser la plateforme. La partie technique de l'application est opérationnelle, mais il est recommandé de tester les rôles utilisateurs avant le déploiement.
 
 ## 📌 3. Décisions retenues
-- Lancer une campagne d'aide pour les femmes des montagnes
+- Tester la plateforme pendant une semaine avec un groupe pilote
+- Préparer une note interne expliquant les fonctionnalités principales
+- Créer des comptes de test pour les rôles Admin, Secrétaire, Employé et Stagiaire
+- Utiliser la plateforme pour générer les prochains procès-verbaux
+- Organiser une séance de formation courte pour les utilisateurs concernés
 
 ## 📅 4. Plan d'action
-- Meryem : Organiser la campagne d'aide
-- Sanaa et Ahmed : Participer à la campagne
+- Yassine El Khadiri préparera une liste des documents administratifs les plus utilisés avant le 15 juin 2026
+- Sara Benali rédigera la note de communication interne avant le 16 juin 2026
+- Amine Berrada vérifiera les accès utilisateurs et les rôles avant le 17 juin 2026
+- Hanane Bouhyla validera le lancement du test pilote avant le 18 juin 2026
 
-**Prochaine échéance :** À définir
+**Prochaine échéance :** 2026-06-20

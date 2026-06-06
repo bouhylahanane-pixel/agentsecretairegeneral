@@ -8,3 +8,4 @@ gTTS
 reportlab
 nest_asyncio
 PyJWT
+passlib[bcrypt]

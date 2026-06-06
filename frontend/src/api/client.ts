@@ -26,10 +26,15 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Si pas de réponse du serveur ou si code erreur de réseau (comme ERR_CONNECTION_REFUSED)
     if (!error.response || error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
       if (onNetworkErrorCallback) {
         onNetworkErrorCallback();
+      }
+    }
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (window.location.pathname !== '/login') {
+        localStorage.removeItem('token');
+        window.dispatchEvent(new Event('auth:unauthorized'));
       }
     }
     return Promise.reject(error);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Bell, Clock, BrainCircuit, CheckCircle, AlertTriangle, AlertCircle, RefreshCw, Sun, Moon, LogOut } from 'lucide-react';
 import { useApiError } from '../../contexts/ApiErrorContext';
-import { useUser } from '../../contexts/UserContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../api/endpoints';
 import { API_URL } from '../../config';
 import type { Notification } from '../../types';
@@ -12,7 +12,7 @@ export default function Header() {
   const [time, setTime] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
   const { isBackendOffline, setBackendOffline } = useApiError();
-  const { logout } = useUser();
+  const { logout } = useAuth();
   const [retrying, setRetrying] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -45,17 +45,31 @@ export default function Header() {
     return () => clearInterval(timer);
   }, []);
 
+  const fetchNotifs = async () => {
+    try {
+      const data = await api.getNotifications();
+      setNotifications(data);
+    } catch (err) {
+      console.error('Impossible de charger les notifications', err);
+    }
+  };
+
   useEffect(() => {
-    const fetchNotifs = async () => {
-      try {
-        const data = await api.getNotifications();
-        setNotifications(data);
-      } catch (err) {
-        console.error('Impossible de charger les notifications', err);
-      }
-    };
     fetchNotifs();
   }, []);
+
+  useEffect(() => {
+    if (showNotifications) {
+      fetchNotifs();
+    }
+  }, [showNotifications]);
+
+  const formatNotificationTime = (value: string) => {
+    if (!value) return 'Maintenant';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  };
 
   const getViewTitle = () => {
     switch (location.pathname) {
@@ -163,7 +177,9 @@ export default function Header() {
               className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800/80 transition-all active:scale-95 flex items-center justify-center bg-white dark:bg-transparent"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+              {notifications.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+              )}
             </button>
 
             {/* Dropdown list */}
@@ -175,6 +191,11 @@ export default function Header() {
                 </div>
                 
                 <div className="space-y-2.5 pt-2.5 max-h-64 overflow-y-auto">
+                  {notifications.length === 0 && (
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      Aucune alerte réelle enregistrée pour le moment.
+                    </div>
+                  )}
                   {notifications.map((notif) => (
                     <div key={notif.id} className="flex gap-2.5 text-left text-xs p-1 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
                       {notif.type === 'warning' ? (
@@ -186,7 +207,7 @@ export default function Header() {
                       )}
                       <div>
                         <p className="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-normal">{notif.text}</p>
-                        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 block mt-1">{notif.time}</span>
+                        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 block mt-1">{formatNotificationTime(String(notif.time || ''))}</span>
                       </div>
                     </div>
                   ))}

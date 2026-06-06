@@ -1,0 +1,113 @@
+EMAIL: admin@test.com | DB_HASH: $2b$12$tx2nvjWq30ei0WqmRuPLpusSWkT6SpRgpfG4ADRckbhuVbrh6mWsC | INPUT_PASS: password | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | EXCEPTION: NONE | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | INPUT_PASS_REPR: 'password' | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | DB_HASH: $2b$12$tx2nvjWq30ei0WqmRuPLpusSWkT6SpRgpfG4ADRckbhuVbrh6mWsC | INPUT_PASS: 'password' | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | DB_HASH: secretariat2026 | INPUT_PASS: 'secretariat2026' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | DB_HASH: secretariat2026 | INPUT_PASS: 'secretariat2026' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | DB_HASH: secretariat2026 | INPUT_PASS: 'secretariat2026' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | DB_HASH: secretariat2026 | INPUT_PASS: 'secretariat2026' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | DB_HASH: secretariat2026 | INPUT_PASS: 'secretariat2026' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: password | INPUT_PASS: 'password' | EXCEPTION: <class 'passlib.exc.UnknownHashError'>: hash could not be identified | IS_VALID: True
+EMAIL: admin@test.com | DB_HASH: $2b$12$R/FIqNW3AskgKS8ZF3pORONqq.vKCAtMufJWhYZ1Pwu/4Q/puGLR. | INPUT_PASS: 'admin123' | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: secretaire@test.com | DB_HASH: $2b$12$oljTFifMlLnaYMVJDImKGuJjb85YZIs3CjO65fSiVExKEh44exhw6 | INPUT_PASS: 'secretaire123' | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: secretaire@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: employee@test.com | DB_HASH: $2b$12$AMepNsp4r3jPnOyrP2RJr.3vwZzMQ6mJ1OYDmmZNM45QrOYn5POnK | INPUT_PASS: 'employee123' | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: employee@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: stagiaire@test.com | DB_HASH: $2b$12$cSow97ApS5BZhgKGoPmI1exLykXdlcSTc5NJz6ND5WzH5v85TcDWK | INPUT_PASS: 'stagiaire123' | EXCEPTION: <class 'ValueError'>: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72]) | IS_VALID: False
+EMAIL: stagiaire@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@gmail.com | USER_FOUND: False | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
