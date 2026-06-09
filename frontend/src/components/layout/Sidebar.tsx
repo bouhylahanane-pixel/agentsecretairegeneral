@@ -25,11 +25,12 @@ const tabsByRole: Record<string, SidebarRoute[]> = {
     { path: '/audit-logs', label: 'Journaux d\'Audit', icon: ScrollText, resource: 'auditLogs' }
   ],
   secretaire: [
-    { path: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard, resource: 'dashboard' },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, resource: 'dashboard' },
     { path: '/reunions', label: 'Gestion des Réunions', icon: Calendar, resource: 'reunions' },
     { path: '/ia-pv', label: 'Transcription & IA (PV)', icon: Mic, resource: 'ia_pv' },
     { path: '/gabarits', label: 'Générateur d\'Attestations', icon: FileText, resource: 'gabarits' },
-    { path: '/demandes-attente', label: 'Demandes en Attente', icon: Inbox, resource: 'demandes_secretaire' }
+    { path: '/demandes-attente', label: 'Demandes en Attente', icon: Inbox, resource: 'demandes_secretaire' },
+    { path: '/chat-restreint', label: 'Assistant IA Restreint', icon: MessageSquareText, resource: 'chat_ia_restreint' }
   ],
   employe: [
     { path: '/calendrier', label: 'Mon Calendrier', icon: CalendarDays, resource: 'calendrier' },
@@ -38,6 +39,7 @@ const tabsByRole: Record<string, SidebarRoute[]> = {
     { path: '/nouvelle-demande', label: 'Nouvelle Demande', icon: PlusCircle, resource: 'nouvelle_demande' }
   ],
   stagiaire: [
+    { path: '/calendrier', label: 'Mon Calendrier', icon: CalendarDays, resource: 'calendrier' },
     { path: '/espace-stage', label: 'Mon Espace Stage', icon: GraduationCap, resource: 'espace_stage' },
     { path: '/mes-docs-stage', label: 'Mes Documents (Lecture seule)', icon: FolderLock, resource: 'docs_stage_lecture' },
     { path: '/chat-restreint', label: 'Assistant IA Restreint', icon: MessageSquareText, resource: 'chat_ia_restreint' }
@@ -86,8 +88,8 @@ export default function Sidebar() {
       <div>
         {/* ─── Header / Logo ─── */}
         <div className="flex items-center gap-3 px-2 py-4 mb-6 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
-          <div className={`p-2.5 rounded-xl text-white shadow-lg ${accentGradient}`}>
-            {isAdmin ? <ShieldCheck className="w-5 h-5" /> : <Building2 className="w-5 h-5" />}
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg border-2 border-white/10 shrink-0 bg-white dark:bg-white/90">
+            <img src="/logo.png" alt="Smart Org Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="text-xs font-black text-slate-900 dark:text-white tracking-widest uppercase transition-colors duration-300">

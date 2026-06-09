@@ -28,9 +28,21 @@ export default function EmployeeCalendarPage() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const reqs = await documentRequestsApi.getMyDocumentRequests();
+        const [reqs, myMeetings] = await Promise.all([
+          documentRequestsApi.getMyDocumentRequests(),
+          documentRequestsApi.getMyMeetings().catch(() => [])
+        ]);
         const convs = reqs.filter(r => r.document_type === 'convocation_reunion' || r.document_type === 'convocation_entretien');
-        setMeetings(convs);
+        const combined = [...convs, ...myMeetings];
+        
+        // Sort by date descending
+        combined.sort((a, b) => {
+          const d1 = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const d2 = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return d2 - d1;
+        });
+        
+        setMeetings(combined);
       } catch (err: any) {
         setError("Impossible de charger vos convocations.");
       } finally {
@@ -91,7 +103,7 @@ export default function EmployeeCalendarPage() {
                     </span>
                     {isReady && (
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                        Confirmée
+                        Programmée
                       </span>
                     )}
                   </div>
@@ -103,14 +115,17 @@ export default function EmployeeCalendarPage() {
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0">
-                  <button 
-                    onClick={() => downloadFile(meeting.generated_file_path)}
-                    disabled={!isReady || !meeting.generated_file_path}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
-                  >
-                    <Download className="w-4 h-4" />
-                    Ma Convocation
-                  </button>
+                  {meeting.generated_file_path ? (
+                    <button 
+                      onClick={() => downloadFile(meeting.generated_file_path)}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Ma Convocation
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 italic">Aucun fichier</span>
+                  )}
                 </div>
               </div>
             );

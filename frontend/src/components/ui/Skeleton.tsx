@@ -15,7 +15,7 @@ export function Skeleton({ className = '' }: SkeletonProps) {
   );
 }
 
-/** Bloc tableau de bord en chargement */
+/** Bloc dashboard en chargement */
 export function DashboardSkeleton() {
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">

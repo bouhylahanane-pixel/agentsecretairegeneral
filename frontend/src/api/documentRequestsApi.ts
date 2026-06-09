@@ -75,6 +75,11 @@ export const documentRequestsApi = {
     return data;
   },
 
+  getMyMeetings: async () => {
+    const { data } = await client.get<DocumentRequest[]>('/api/my-meetings');
+    return data;
+  },
+
   getAllDocumentRequests: async () => {
     const { data } = await client.get<DocumentRequest[]>('/api/document-requests');
     return data;

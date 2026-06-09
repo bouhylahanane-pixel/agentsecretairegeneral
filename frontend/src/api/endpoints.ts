@@ -74,7 +74,7 @@ export const api = {
   deleteInstanceMeeting: (committeeId: string, meetingId: string) =>
     client.delete(`/api/instances/${committeeId}/meetings/${meetingId}`),
 
-  // --- Tableau de Bord / Analytics ---
+  // --- Dashboard / Analytics ---
   getStats: () => client.get<AnalyticsStats>('/analytics/stats'),
   getLogs: () => client.get<ActivityLog[]>('/analytics/logs'),
   getChartData: () => client.get<Record<string, number>>('/analytics/chart'),

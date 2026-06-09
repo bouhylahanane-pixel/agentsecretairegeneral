@@ -36,7 +36,7 @@ export default function DashboardPage() {
       }
     } catch (err: any) {
       console.error(err);
-      setError("Erreur lors de la récupération des données du tableau de bord.");
+      setError("Erreur lors de la récupération des données du dashboard.");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function DashboardPage() {
             Vue d'ensemble
           </h2>
           <p className="text-xs text-slate-500 font-semibold mt-1">
-            Tableau de bord de pilotage du Secrétariat Général
+            Dashboard de pilotage du Secrétariat Général
           </p>
         </div>
         <button 

@@ -699,6 +699,56 @@ async def structure_text(data: dict, current_user: dict = Depends(require_roles(
 # ==========================================
 # 📋 ROUTES DE GESTION DES RÉUNIONS (SQL)
 # ==========================================
+@app.get("/api/my-meetings", tags=["Meetings"])
+async def get_my_meetings(current_user: dict = Depends(get_current_user)):
+    """Récupère les réunions de l'utilisateur courant."""
+    import sqlite3
+    from data.database_manager import DB_PATH
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # Check by nom, prenom, or email
+    nom = current_user.get('nom') or ''
+    prenom = current_user.get('prenom') or ''
+    email = current_user.get('email') or ''
+    
+    query = "SELECT * FROM reunions WHERE 1=0"
+    params = []
+    if nom:
+        query += " OR participants LIKE ?"
+        params.append(f'%{nom}%')
+    if prenom:
+        query += " OR participants LIKE ?"
+        params.append(f'%{prenom}%')
+    if email:
+        query += " OR participants LIKE ?"
+        params.append(f'%{email}%')
+        
+    if not params:
+        return []
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    result = []
+    for r in rows:
+        result.append({
+            "id": r['id'] + 10000,
+            "document_type": r['titre'] or "Réunion",
+            "status": "ready",
+            "created_at": f"{r['date']}T{r['heure_debut']}:00" if r['date'] and r['heure_debut'] else None,
+            "motif": r['lieu'] or "Secrétariat",
+            "generated_file_path": None,
+            "requester_id": current_user['id'],
+            "requester_name": current_user.get('nom', ''),
+            "requester_email": current_user.get('email', ''),
+            "requester_role": current_user.get('role', ''),
+            "details": r['objet']
+        })
+    return result
+
 @app.get("/meetings", tags=["Meetings"])
 async def get_meetings(current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     """Récupère la liste de toutes les réunions programmées."""
@@ -852,7 +902,7 @@ async def trigger_invitations(data: dict, current_user: dict = Depends(require_r
 # 📁 ROUTE DE TÉLÉCHARGEMENT DE DOCUMENTS (PDF & MD)
 # ==========================================
 @app.get("/download/{file_path:path}", tags=["Documents"])
-def download_file(file_path: str, current_user: dict = Depends(require_roles(["admin", "secretaire", "employee"]))):
+def download_file(file_path: str, current_user: dict = Depends(require_roles(["admin", "secretaire", "employee", "stagiaire"]))):
     """Permet au frontend de télécharger les documents générés (PDF ou Markdown)."""
     normalized_path = file_path.replace("\\", "/")
     clean_path = os.path.basename(normalized_path)

@@ -199,7 +199,7 @@ def generate_document_pdf(requete: GenerateDocumentRequest) -> str:
 @router.post("/generate", response_model=GenerateDocumentResponse)
 async def generate_document(
     requete: GenerateDocumentRequest,
-    current_user: dict = Depends(require_roles(["admin", "secretaire"])),
+    current_user: dict = Depends(require_roles(["admin", "secretaire", "employee"])),
 ):
     pdf_path = generate_document_pdf(requete)
     return GenerateDocumentResponse(pdf_path=pdf_path, message="Document genere avec succes.")
@@ -209,7 +209,7 @@ async def generate_document(
 async def send_email_route(
     payload: SendEmailRequest,
     background_tasks: BackgroundTasks,
-    current_user: dict = Depends(require_roles(["admin", "secretaire"])),
+    current_user: dict = Depends(require_roles(["admin", "secretaire", "employee"])),
 ):
     import os
     doc_type = normalize_document_type(payload.type)

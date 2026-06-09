@@ -14,9 +14,9 @@ export const PERMISSIONS = {
   demandes_secretaire: ["secretaire"],
 
   // --- Employé resources ---
-  calendrier: ["employe"],
+  calendrier: ["employe", "stagiaire"],
   mes_documents: ["employe"],
-  chat_ia_restreint: ["employe", "stagiaire"],
+  chat_ia_restreint: ["employe", "stagiaire", "secretaire"],
   nouvelle_demande: ["employe"],
 
   // --- Stagiaire resources ---
