@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Building2, Lock, Mail, Moon, ShieldAlert, ShieldCheck, Sun } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { client } from '../api/client';
+import { getDefaultRoute } from '../auth/permissions';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -42,7 +43,7 @@ export default function LoginPage() {
 
       const { user, access_token } = response.data;
       login(user, access_token);
-      navigate('/dashboard', { replace: true });
+      navigate(getDefaultRoute(user.role), { replace: true });
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
         setError('Identifiants incorrects.');

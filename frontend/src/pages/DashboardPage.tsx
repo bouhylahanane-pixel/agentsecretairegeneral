@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Activity, CheckCircle, Clock, AlertTriangle, Shield, FileText } from 'lucide-react';
+import { RefreshCw, Activity, CheckCircle, Clock, AlertTriangle, Shield, FileText, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { dashboardApi } from '../api/dashboardApi';
 
@@ -89,7 +89,7 @@ export default function DashboardPage() {
       )}
 
       {/* KPI Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white dark:bg-slate-900/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg"><Activity className="w-6 h-6"/></div>
           <div>
@@ -109,6 +109,13 @@ export default function DashboardPage() {
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Décisions PV</p>
             <p className="text-2xl font-black text-slate-900 dark:text-white">{stats?.total_decisions || 0}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg"><Users className="w-6 h-6"/></div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-slate-500">Réunions Planifiées</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{stats?.total_meetings || 0}</p>
           </div>
         </div>
         <div className="bg-white dark:bg-slate-900/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">

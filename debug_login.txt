@@ -111,3 +111,149 @@ EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | 
 EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
 EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
 EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: stagiaire@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: stagiaire@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: stagiaire@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: stagiaire@test.com | USER_FOUND: False | RETURNING NONE
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | USER_FOUND: False | RETURNING NONE
+EMAIL: hanane.bouhyla@entreprise.ma | USER_FOUND: False | RETURNING NONE
+EMAIL: hanane.bouhyla@etu.uae.ac.ma | USER_FOUND: False | RETURNING NONE
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: secretaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | USER_FOUND: False | RETURNING NONE
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: False
+EMAIL: souhaben535@gmail.com | USER_FOUND: True | RETURNING NONE
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: False
+EMAIL: souhaben535@gmail.com | USER_FOUND: True | RETURNING NONE
+EMAIL: employee@test.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: stagiaire@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: passlib | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: hanane.bouhyla@entreprise.ma | USER_FOUND: False | RETURNING NONE
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: hananeymed2020@gmail.com | HASH_PRESENT: True | HASH_LEN: 9 | HASH_PREFIX: hana | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: hananeymed2020@gmail.com | HASH_PRESENT: True | HASH_LEN: 9 | HASH_PREFIX: hana | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: hananeymed2020@gmail.com | HASH_PRESENT: True | HASH_LEN: 9 | HASH_PREFIX: hana | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: hananeymed2020@gmail.com | HASH_PRESENT: True | HASH_LEN: 9 | HASH_PREFIX: hana | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: elkhoumrimeryem@gmail.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: bcrypt_direct | IS_VALID: True
+EMAIL: souhaben535@gmail.com | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 60 | HASH_PREFIX: $2b$ | VERIFY_MODE: passlib | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: mohamed.tech@entreprise.ma | HASH_PRESENT: True | HASH_LEN: 15 | HASH_PREFIX: secr | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: True
+EMAIL: admin@test.com | HASH_PRESENT: True | HASH_LEN: 50 | HASH_PREFIX: .TjZ | VERIFY_MODE: legacy_plaintext:UnknownHashError | IS_VALID: False
+EMAIL: admin@test.com | USER_FOUND: True | RETURNING NONE

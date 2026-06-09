@@ -128,7 +128,7 @@ export default function Header() {
 
       <header className="h-16 bg-white dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between px-8 shadow-sm dark:shadow-lg relative transition-colors duration-300">
         {/* Dynamic Page Title */}
-        <div>
+        <div className="pl-10">
           <h2 className="text-sm font-black text-slate-900 dark:text-white tracking-wide uppercase transition-colors duration-300">
             {getViewTitle()}
           </h2>
@@ -158,6 +158,21 @@ export default function Header() {
               <BrainCircuit className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 transition-colors duration-300" />
               LLA-MA 3.3 ACTIVE
             </span>
+          </div>
+
+          {/* Test Role Switcher */}
+          <div className="flex items-center gap-2 border-r border-slate-200 dark:border-slate-800 pr-4 mr-2">
+            <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Tester le rôle :</label>
+            <select 
+              value={useAuth().user?.role || 'employe'} 
+              onChange={(e) => useAuth().testSwitchRole && useAuth().testSwitchRole(e.target.value as any)}
+              className="text-xs font-bold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-indigo-700 dark:text-indigo-400 rounded-lg px-2 py-1 outline-none cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+            >
+              <option value="admin">Admin</option>
+              <option value="secretaire">Secrétaire</option>
+              <option value="employe">Employé</option>
+              <option value="stagiaire">Stagiaire</option>
+            </select>
           </div>
 
           {/* Theme Toggle Button */}

@@ -159,6 +159,23 @@ export default function UsersPage() {
     }
   };
 
+  const handleRoleChange = async (user: UserResponse, newRole: string) => {
+    const isSelf = currentUser?.email === user.email;
+    if (isSelf && newRole !== 'admin') {
+      alert("Impossible de retirer votre propre rôle admin.");
+      return;
+    }
+
+    try {
+      await usersApi.updateUserRole(user.id, newRole);
+      showSuccess(`Le rôle de ${user.nom} a été mis à jour.`);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Une erreur est survenue lors de la modification du rôle.");
+      fetchUsers(); // Revert visual change
+    }
+  };
+
   const isEditingSelf = editingUser?.email === currentUser?.email;
 
   return (
@@ -257,9 +274,17 @@ export default function UsersPage() {
                       <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5"><Mail className="w-3 h-3"/> {u.email}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-bold text-[10px] rounded border border-indigo-100 dark:border-indigo-800/50 uppercase">
-                        {u.role}
-                      </span>
+                      <select
+                        value={u.role}
+                        onChange={(e) => handleRoleChange(u, e.target.value)}
+                        disabled={currentUser?.email === u.email}
+                        className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-bold text-[10px] rounded border border-indigo-100 dark:border-indigo-800/50 uppercase outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed appearance-none pr-4"
+                      >
+                        <option value="admin">ADMIN</option>
+                        <option value="secretaire">SECRETAIRE</option>
+                        <option value="employee">EMPLOYEE</option>
+                        <option value="stagiaire">STAGIAIRE</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4">
                       {u.is_active ? (

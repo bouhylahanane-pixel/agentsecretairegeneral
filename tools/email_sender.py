@@ -12,6 +12,10 @@ def send_invitation_email(titre: str, date: str, destinataires: list[str]) -> bo
         print("Erreur: EMAIL_USER ou EMAIL_PASSWORD manquant dans .env")
         return False
         
+    if email_user == "votre.email@gmail.com" or email_pass == "votre_mot_de_passe_application_google":
+        print(f"MOCK EMAIL: Simulation d'envoi à {destinataires} pour la réunion '{titre}'")
+        return True
+        
     try:
         msg = MIMEMultipart()
         msg["From"] = email_user

@@ -30,7 +30,6 @@ const DOCUMENT_LABELS: Record<string, string> = {
   attestation_presence: 'Attestation de présence',
   convocation_reunion: 'Convocation de réunion',
   convocation_entretien: 'Convocation entretien',
-  document_administratif: 'Document administratif',
 };
 
 const STATUS_LABELS: Record<DocumentRequestStatus, string> = {
@@ -52,7 +51,6 @@ const STATUS_STYLES: Record<DocumentRequestStatus, string> = {
 const employeeDocs: DocOption[] = [
   { value: 'attestation_travail', label: 'Attestation de travail' },
   { value: 'attestation_presence', label: 'Attestation de présence' },
-  { value: 'document_administratif', label: 'Document administratif' },
 ];
 
 const stagiaireDocs: DocOption[] = [
@@ -66,7 +64,6 @@ const staffDocs: DocOption[] = [
   { value: 'attestation_presence', label: 'Attestation de présence' },
   { value: 'convocation_reunion', label: 'Convocation de réunion' },
   { value: 'convocation_entretien', label: 'Convocation entretien' },
-  { value: 'document_administratif', label: 'Document administratif' },
 ];
 
 function formatDate(value?: string) {
@@ -268,16 +265,31 @@ function StaffDocumentsView() {
   const [selectedRequest, setSelectedRequest] = useState<DocumentRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | DocumentRequestStatus>('all');
   const [comment, setComment] = useState('');
-  const [prepareForm, setPrepareForm] = useState({
+  const [prepareForm, setPrepareForm] = useState<any>({
+    motif: '',
+    details: '',
     requester_name: '',
     requester_email: '',
     requester_role: '',
     poste: '',
     departement: '',
     date_recrutement: '',
-    motif: '',
-    details: '',
+    entreprise: '',
+    service: '',
+    encadrant: '',
+    date_debut: '',
+    date_fin: '',
+    date: '',
+    heure: '',
+    lieu: '',
+    objet: '',
+    participants: '',
+    recruteur: '',
+    salle: '',
   });
+
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [workingId, setWorkingId] = useState<number | null>(null);
   const [aiWorkingId, setAiWorkingId] = useState<number | null>(null);
@@ -539,6 +551,34 @@ function StaffDocumentsView() {
             <StatusBadge status={selectedRequest.status} />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2 bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
+              <label className="block text-[10px] font-bold uppercase text-indigo-800 dark:text-indigo-300 mb-2">
+                <Sparkles className="w-3 h-3 inline mr-1 mb-0.5" />
+                Auto-remplissage depuis la base
+              </label>
+              <select
+                value={selectedUserEmail}
+                onChange={handleUserSelect}
+                className="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-semibold shadow-sm"
+              >
+                <option value="">Sélectionner un employé ou stagiaire...</option>
+                {usersList.filter(u => u.user_type === 'employee').length > 0 && (
+                  <optgroup label="Employés">
+                    {usersList.filter(u => u.user_type === 'employee').map(u => (
+                      <option key={u.email} value={u.email}>{u.nom} ({u.departement || u.poste})</option>
+                    ))}
+                  </optgroup>
+                )}
+                {usersList.filter(u => u.user_type === 'stagiaire').length > 0 && (
+                  <optgroup label="Stagiaires">
+                    {usersList.filter(u => u.user_type === 'stagiaire').map(u => (
+                      <option key={u.email} value={u.email}>{u.nom}</option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+            </div>
+
             <InfoTile label="Type demandé" value={DOCUMENT_LABELS[selectedRequest.document_type] || selectedRequest.document_type} />
             <div>
               <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Motif officiel</label>
@@ -596,6 +636,48 @@ function StaffDocumentsView() {
                 className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
+            
+            {(selectedRequest.document_type === 'attestation_stage') && (
+              <>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Entreprise d'accueil</label>
+                  <input value={prepareForm.entreprise} onChange={(e) => setPrepareForm({ ...prepareForm, entreprise: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Encadrant de Stage</label>
+                  <input value={prepareForm.encadrant} onChange={(e) => setPrepareForm({ ...prepareForm, encadrant: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Date de début</label>
+                  <input type="date" value={prepareForm.date_debut} onChange={(e) => setPrepareForm({ ...prepareForm, date_debut: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Date de fin</label>
+                  <input type="date" value={prepareForm.date_fin} onChange={(e) => setPrepareForm({ ...prepareForm, date_fin: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+              </>
+            )}
+            
+            {selectedRequest.document_type === 'convocation_reunion' && (
+              <>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Date de la séance</label>
+                  <input type="date" value={prepareForm.date} onChange={(e) => setPrepareForm({ ...prepareForm, date: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Heure</label>
+                  <input type="time" value={prepareForm.heure} onChange={(e) => setPrepareForm({ ...prepareForm, heure: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Lieu / Salle</label>
+                  <input value={prepareForm.lieu} onChange={(e) => setPrepareForm({ ...prepareForm, lieu: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Objet de la rencontre</label>
+                  <input value={prepareForm.objet} onChange={(e) => setPrepareForm({ ...prepareForm, objet: e.target.value })} className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+              </>
+            )}
             <div className="md:col-span-2">
               <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <label className="block text-[10px] font-bold uppercase text-slate-500">Informations à intégrer dans le document</label>

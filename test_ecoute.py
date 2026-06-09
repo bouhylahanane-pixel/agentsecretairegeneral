@@ -5,7 +5,6 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 def enregistrer_micro(duree=5, filename="outputs/audio/mon_vote.wav"):
     """Enregistre le son du micro pendant X secondes"""
@@ -24,11 +23,11 @@ def enregistrer_micro(duree=5, filename="outputs/audio/mon_vote.wav"):
 
 def transcrire_audio_avec_groq(file_path):
     """Envoie le fichier audio à Groq pour obtenir le texte"""
-    if not GROQ_API_KEY:
+    if not os.environ.get("GROQ_API_KEY"):
         return "Erreur : Clé GROQ_API_KEY manquante."
         
     url = "https://api.groq.com/openai/v1/audio/transcriptions"
-    headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+    headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
     
     with open(file_path, "rb") as audio_file:
         files = {

@@ -44,7 +44,9 @@ def load_meetings():
             "date": row["date"],
             "heure": row["heure_debut"],
             "heure_fin": row["heure_fin"],
-            "lieu": row["lieu"] if "lieu" in row.keys() else ""
+            "lieu": row["lieu"] if "lieu" in row.keys() else "",
+            "participants": row["participants"] if "participants" in row.keys() else "",
+            "objet": row["objet"] if "objet" in row.keys() else ""
         })
     return meetings
 
@@ -89,7 +91,9 @@ def create_meeting(params):
     date = params.get("date")
     heure = params.get("heure")
     lieu = params.get("lieu") or params.get("salle") or ""
-    objet = params.get("objet") or "Réunion de travail"
+    titre = params.get("titre") or "Réunion de travail"
+    objet = params.get("objet") or titre
+    participants = params.get("participants", "")
     nom_employe = params.get("nom")
 
     # Harmonisation des formats
@@ -117,12 +121,12 @@ def create_meeting(params):
     # On vérifie si la colonne 'lieu' existe, sinon on l'insère dans le titre
     try:
         cursor.execute("""
-            INSERT INTO reunions (titre, date, heure_debut, heure_fin, organisateur_id, lieu)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (objet, date, heure_debut, heure_fin, 1, lieu))
+            INSERT INTO reunions (titre, date, heure_debut, heure_fin, organisateur_id, lieu, participants, objet)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (titre, date, heure_debut, heure_fin, 1, lieu, participants, objet))
     except sqlite3.OperationalError:
         # Fallback si la colonne 'lieu' n'existe pas encore dans ta structure SQLite
-        titre_complet = f"{objet} ({lieu})" if lieu else objet
+        titre_complet = f"{titre} ({lieu})" if lieu else titre
         cursor.execute("""
             INSERT INTO reunions (titre, date, heure_debut, heure_fin, organisateur_id)
             VALUES (?, ?, ?, ?, ?)
@@ -160,7 +164,9 @@ def find_meeting_by_date(date):
             "id": row["id"],
             "titre": row["titre"],
             "date": row["date"],
-            "heure": row["heure_debut"]
+            "heure": row["heure_debut"],
+            "participants": row["participants"] if "participants" in row.keys() else "",
+            "objet": row["objet"] if "objet" in row.keys() else ""
         })
     return results
 

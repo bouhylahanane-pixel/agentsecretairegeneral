@@ -17,6 +17,7 @@ type AuthContextType = {
   token: string | null;
   login: (userData: CurrentUser, token: string) => void;
   logout: () => void;
+  testSwitchRole: (newRole: UserRole) => void;
   loading: boolean;
   isAuthenticated: boolean;
 };
@@ -65,8 +66,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const testSwitchRole = (newRole: UserRole) => {
+    if (user) {
+      setUser({ ...user, role: newRole });
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, token, login, logout, testSwitchRole, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

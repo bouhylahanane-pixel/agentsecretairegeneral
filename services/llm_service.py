@@ -11,16 +11,15 @@ from typing import Any
 
 import requests
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODELE_LLAMA = "llama-3.3-70b-versatile"
 
 
 def _appel_groq_json(prompt_systeme: str, contenu_utilisateur: str, temperature: float = 0.15) -> dict[str, Any] | None:
     """Appelle l'API Groq et parse la réponse JSON. Retourne None si indisponible."""
-    if not GROQ_API_KEY:
+    if not os.environ.get("GROQ_API_KEY"):
         return None
-    headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}", "Content-Type": "application/json"}
     payload = {
         "model": MODELE_LLAMA,
         "response_format": {"type": "json_object"},
@@ -37,6 +36,32 @@ def _appel_groq_json(prompt_systeme: str, contenu_utilisateur: str, temperature:
             return json.loads(texte)
     except Exception as exc:
         print(f"⚠️ Erreur Groq LLM : {exc}")
+    return None
+
+def transcrire_audio(file_bytes: bytes, filename: str) -> str | None:
+    """Utilise l'API Whisper de Groq pour transcrire un fichier audio."""
+    if not os.environ.get("GROQ_API_KEY"):
+        return None
+        
+    url = "https://api.groq.com/openai/v1/audio/transcriptions"
+    headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
+    files = {
+        "file": (filename, file_bytes, "audio/webm")
+    }
+    data = {
+        "model": "whisper-large-v3-turbo",
+        "language": "fr",
+        "response_format": "json"
+    }
+    
+    try:
+        reponse = requests.post(url, headers=headers, files=files, data=data, timeout=60)
+        if reponse.status_code == 200:
+            return reponse.json().get("text", "").strip()
+        else:
+            print(f"⚠️ Erreur Transcription Groq : {reponse.text}")
+    except Exception as exc:
+        print(f"⚠️ Erreur API Whisper : {exc}")
     return None
 
 
@@ -197,7 +222,7 @@ def generer_pv_markdown(
         "decisions": donnees.get("decisions", []),
         "actions": donnees.get("actions", []),
         "prochaine_reunion": donnees.get("prochaine_reunion", "À définir"),
-        "moteur": "LLaMA-3.3-70b" if GROQ_API_KEY else "heuristique-local",
+        "moteur": "LLaMA-3.3-70b" if os.environ.get("GROQ_API_KEY") else "heuristique-local",
     }
 
 

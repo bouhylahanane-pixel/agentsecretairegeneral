@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
 from api.routers.auth import require_roles
@@ -14,6 +14,7 @@ from tools.pdf_generator import (
     generate_convocation_entretien_pdf,
     generate_convocation_reunion_pdf,
 )
+from tools.notification_service import send_pdf_attachment_email
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -29,11 +30,84 @@ class GenerateDocumentRequest(BaseModel):
     departement: Optional[str] = None
     date_recrutement: Optional[str] = None
     motif: Optional[str] = None
+    entreprise: Optional[str] = None
+    service: Optional[str] = None
+    encadrant: Optional[str] = None
+    date_debut: Optional[str] = None
+    date_fin: Optional[str] = None
+    heure: Optional[str] = None
+    lieu: Optional[str] = None
+    objet: Optional[str] = None
+    participants: Optional[str] = None
+    recruteur: Optional[str] = None
+    salle: Optional[str] = None
 
 
 class GenerateDocumentResponse(BaseModel):
     pdf_path: str
     message: str
+
+
+class DocumentUser(BaseModel):
+    user_type: str
+    nom: str
+    email: str
+    poste: Optional[str] = None
+    departement: Optional[str] = None
+    date_recrutement: Optional[str] = None
+    date_debut: Optional[str] = None
+    date_fin: Optional[str] = None
+    ecole_etudes: Optional[str] = None
+    sujet_stage: Optional[str] = None
+
+
+@router.get("/users", response_model=list[DocumentUser])
+def get_users_for_documents(current_user: dict = Depends(require_roles(["admin", "secretaire", "employee"]))):
+    import sqlite3
+    from api.routers.auth import DB_PATH
+    
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    users = []
+    
+    # Get employees
+    cursor.execute("SELECT nom, prenom, email, poste, departement, date_recrutement FROM employes WHERE poste != 'stagiaire'")
+    for row in cursor.fetchall():
+        nom_complet = f"{row['prenom']} {row['nom']}" if row['prenom'] else row['nom']
+        users.append(DocumentUser(
+            user_type="employee",
+            nom=nom_complet,
+            email=row["email"],
+            poste=row["poste"],
+            departement=row["departement"],
+            date_recrutement=row["date_recrutement"]
+        ))
+        
+    # Get stagiaires
+    cursor.execute("SELECT nom, prenom, email, date_debut, date_fin, ecole_etudes, sujet_stage FROM stagiaires")
+    for row in cursor.fetchall():
+        nom_complet = f"{row['prenom']} {row['nom']}" if row['prenom'] else row['nom']
+        users.append(DocumentUser(
+            user_type="stagiaire",
+            nom=nom_complet,
+            email=row["email"],
+            date_debut=row["date_debut"],
+            date_fin=row["date_fin"],
+            ecole_etudes=row["ecole_etudes"],
+            sujet_stage=row["sujet_stage"]
+        ))
+        
+    conn.close()
+    return users
+
+
+class SendEmailRequest(BaseModel):
+    email: str
+    nom: str
+    type: str
+    pdf_path: str
 
 
 def normalize_document_type(doc_type: str) -> str:
@@ -73,6 +147,17 @@ def generate_document_pdf(requete: GenerateDocumentRequest) -> str:
         "departement": requete.departement,
         "date_recrutement": requete.date_recrutement,
         "motif": requete.motif,
+        "entreprise": requete.entreprise,
+        "service": requete.service,
+        "encadrant": requete.encadrant,
+        "date_debut": requete.date_debut,
+        "date_fin": requete.date_fin,
+        "heure": requete.heure,
+        "lieu": requete.lieu,
+        "objet": requete.objet,
+        "participants": requete.participants,
+        "recruteur": requete.recruteur,
+        "salle": requete.salle,
     }
 
     if requete.optimiser_ia and requete.details:
@@ -118,3 +203,30 @@ async def generate_document(
 ):
     pdf_path = generate_document_pdf(requete)
     return GenerateDocumentResponse(pdf_path=pdf_path, message="Document genere avec succes.")
+
+
+@router.post("/send-email")
+async def send_email_route(
+    payload: SendEmailRequest,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(require_roles(["admin", "secretaire"])),
+):
+    import os
+    doc_type = normalize_document_type(payload.type)
+    doc_label = doc_type.replace("_", " ").title()
+    
+    # Ensure PDF path starts with outputs/
+    if not payload.pdf_path.startswith("outputs/"):
+        raise HTTPException(status_code=400, detail="Chemin du fichier invalide.")
+        
+    full_path = os.path.join(".", payload.pdf_path)
+    
+    background_tasks.add_task(
+        send_pdf_attachment_email,
+        payload.email,
+        payload.nom,
+        doc_label,
+        full_path
+    )
+    
+    return {"message": "Envoi de l'email planifié avec succès."}

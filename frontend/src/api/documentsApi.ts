@@ -1,8 +1,40 @@
 import { client } from './client';
 
 export const documentsApi = {
-  generateDocument: async (payload: { type: string; nom: string; details?: string; optimiser_ia: boolean }) => {
+  generateDocument: async (payload: { 
+    type: string; 
+    nom: string; 
+    details?: string; 
+    optimiser_ia: boolean;
+    email?: string;
+    requester_role?: string;
+    poste?: string;
+    departement?: string;
+    date_recrutement?: string;
+    motif?: string;
+    entreprise?: string;
+    service?: string;
+    encadrant?: string;
+    date_debut?: string;
+    date_fin?: string;
+    heure?: string;
+    lieu?: string;
+    objet?: string;
+    participants?: string;
+    recruteur?: string;
+    salle?: string;
+  }) => {
     const { data } = await client.post('/api/documents/generate', payload);
+    return data;
+  },
+  
+  getDocumentUsers: async () => {
+    const { data } = await client.get('/api/documents/users');
+    return data;
+  },
+
+  sendDocumentByEmail: async (payload: { email: string; nom: string; type: string; pdf_path: string }) => {
+    const { data } = await client.post('/api/documents/send-email', payload);
     return data;
   },
   

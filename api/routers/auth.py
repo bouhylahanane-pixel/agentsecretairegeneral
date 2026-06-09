@@ -56,16 +56,27 @@ def get_user_by_credentials(email: str, password: str):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
+    # 1. Check employes
     cursor.execute("SELECT * FROM employes WHERE email = ?", (email,))
-    
     user = cursor.fetchone()
+    
+    is_stagiaire = False
+    
+    # 2. If not found, check stagiaires
+    if not user:
+        cursor.execute("SELECT * FROM stagiaires WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        if user:
+            is_stagiaire = True
+
     conn.close()
     
     if user:
-        is_valid, verification_mode = verify_password(password, user["mot_de_passe"])
+        user_dict_temp = dict(user)
+        is_valid, verification_mode = verify_password(password, user_dict_temp.get("mot_de_passe") or "")
             
         with open("debug_login.txt", "a") as f:
-            stored_password = user["mot_de_passe"] or ""
+            stored_password = user_dict_temp.get("mot_de_passe") or ""
             f.write(
                 f"EMAIL: {email} | HASH_PRESENT: {bool(stored_password)} | "
                 f"HASH_LEN: {len(stored_password)} | HASH_PREFIX: {stored_password[:4]} | "
@@ -74,7 +85,14 @@ def get_user_by_credentials(email: str, password: str):
             
         if is_valid:
             user_dict = dict(user)
-            del user_dict["mot_de_passe"]
+            if "mot_de_passe" in user_dict:
+                del user_dict["mot_de_passe"]
+                
+            if is_stagiaire:
+                user_dict["role"] = "stagiaire"
+                user_dict["poste"] = "stagiaire"
+                user_dict["departement"] = user_dict.get("ecole_etudes", "Stage")
+                
             return user_dict
             
     with open("debug_login.txt", "a") as f:
@@ -119,6 +137,14 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM employes WHERE email = ?", (email,))
     user = cursor.fetchone()
+    
+    is_stagiaire = False
+    if not user:
+        cursor.execute("SELECT * FROM stagiaires WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        if user:
+            is_stagiaire = True
+
     conn.close()
     
     if user is None:
@@ -129,7 +155,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     if is_active == 0 or is_active is False:
         raise HTTPException(status_code=403, detail="Compte désactivé.")
         
-    user_dict["role"] = normalize_role(user_dict.get("poste", ""))
+    if is_stagiaire:
+        user_dict["role"] = "stagiaire"
+    else:
+        user_dict["role"] = normalize_role(user_dict.get("poste", ""))
+        
     return user_dict
 
 @router.post("/login", response_model=TokenResponse)
@@ -179,7 +209,7 @@ async def login(credentials: LoginRequest):
             "name": full_name,
             "email": user["email"],
             "role": normalized_role,
-            "departement": user["departement"]
+            "departement": user.get("departement", user.get("ecole_etudes", "Stage"))
         }
     }
 
@@ -191,6 +221,6 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
             "name": full_name,
             "email": current_user["email"],
             "role": current_user["role"],
-            "departement": current_user["departement"]
+            "departement": current_user.get("departement", current_user.get("ecole_etudes", "Stage"))
         }
     }

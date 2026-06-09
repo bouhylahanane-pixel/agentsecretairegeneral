@@ -72,7 +72,14 @@ export default function MeetingsPage() {
     if (!window.confirm(`Envoyer les invitations par e-mail pour la réunion "${m.titre}" ?`)) return;
     setInvitingId(m.id);
     try {
-      const res = await meetingsApi.triggerInvitations({ titre: m.titre, date: m.date });
+      const res = await meetingsApi.triggerInvitations({ 
+        id: m.id, 
+        titre: m.titre, 
+        date: m.date, 
+        heure: m.heure,
+        objet: m.objet,
+        participants: m.participants 
+      });
       showSuccess(res.message || "Invitations envoyées avec succès.");
     } catch (err: any) {
       alert(err.response?.data?.detail || "Échec de l'envoi des invitations.");

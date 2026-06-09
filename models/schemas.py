@@ -43,6 +43,9 @@ class UserUpdate(BaseModel):
 class UserStatusUpdate(BaseModel):
     is_active: bool
 
+class UserRoleUpdate(BaseModel):
+    role: str
+
 class UserPasswordReset(BaseModel):
     new_password: str
     confirm_password: str

@@ -13,7 +13,7 @@ export const meetingsApi = {
     const { data } = await client.delete(`/meetings/delete/${id}`);
     return data;
   },
-  triggerInvitations: async (payload: { titre: string; date: string }) => {
+  triggerInvitations: async (payload: { id?: number; titre: string; date: string; heure?: string; objet?: string; participants?: string }) => {
     const { data } = await client.post('/meetings/trigger-invitations', payload);
     return data;
   },

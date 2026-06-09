@@ -1,5 +1,6 @@
 import sqlite3
 import os
+# pyrefly: ignore [missing-import]
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -81,6 +82,8 @@ def init_db():
             heure_debut TEXT NOT NULL,
             heure_fin TEXT NOT NULL,
             lieu TEXT,
+            participants TEXT,
+            objet TEXT,
             organisateur_id INTEGER,
             FOREIGN KEY (organisateur_id) REFERENCES employes(id)
         )
@@ -91,6 +94,12 @@ def init_db():
     if "lieu" not in colonnes_reunions:
         cursor.execute("ALTER TABLE reunions ADD COLUMN lieu TEXT")
         print("Colonne lieu ajoutée à la table reunions")
+    if "participants" not in colonnes_reunions:
+        cursor.execute("ALTER TABLE reunions ADD COLUMN participants TEXT")
+        print("Colonne participants ajoutée à la table reunions")
+    if "objet" not in colonnes_reunions:
+        cursor.execute("ALTER TABLE reunions ADD COLUMN objet TEXT")
+        print("Colonne objet ajoutée à la table reunions")
     
     # 3. Table des logs
     cursor.execute("""
@@ -132,32 +141,35 @@ def init_db():
     print("La base de données SQLite a été initialisée et synchronisée avec succès !")
 
 def insérer_employes_test():
-    """Remplit la base avec un organigramme d'entreprise enrichi et réaliste."""
+    """Remplit la base avec un organigramme d'entreprise enrichi et réaliste.
+    Ne réinitialise PAS les données si des employés existent déjà (pour préserver les modifications)."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # On vide proprement les anciens enregistrements de test pour éviter les conflits UNIQUE sur le nom
-    cursor.execute("DELETE FROM employes")
+    # Vérifier si des employés existent déjà — si oui, ne pas écraser les données
+    cursor.execute("SELECT COUNT(*) FROM employes")
+    count = cursor.fetchone()[0]
+    if count > 0:
+        conn.close()
+        print(f"Les employés existent déjà ({count} enregistrements). Seed ignoré pour préserver les modifications.")
+        return
     
     # Liste élargie et enrichie des employés avec les vrais e-mails de test
     hashed_password = pwd_context.hash("secretariat2026")
     employes = [
         # Contrats de 40h/semaine
-        ("souhaila", "Ben", "souhaben535@gmail.com", "+212 6 61 11 22 33", "Tanger, Place Id厂商 (Iberia)", "admin", "Direction", "2023-05-10", 40, "08:30-16:30", hashed_password),
+        ("souhaila", "Ben", "souhaben535@gmail.com", "+212 6 61 11 22 33", "Tanger, Place Id厂商 (Iberia)", "secretaire", "Direction", "2023-05-10", 40, "08:30-16:30", hashed_password),
         ("Mohamed", "Alami", "mohamed.tech@entreprise.ma", "+212 6 65 44 33 22", "Tanger, Route de Tétouan", "employee", "Logistique", "2022-03-20", 40, "08:30-16:30", hashed_password),
         ("Karima", "Tazi", "karima.fin@entreprise.ma", "+212 6 67 11 22 44", "Tanger, Malabata", "employee", "Finance", "2021-11-15", 40, "08:30-16:30", hashed_password),
         ("Omar", "Mansouri", "omar.com@entreprise.ma", "+212 6 69 55 66 77", "Tanger, Quartier California", "employee", "Commercial", "2023-08-12", 40, "08:30-16:30", hashed_password),
 
         # Contrats de 35h/semaine
         ("Ahmed", "Ahmadi", "ahmed.drh@entreprise.ma", "+212 6 61 23 45 67", "Tanger, Branes", "employee", "Ressources Humaines", "2024-01-15", 35, "09:00-16:00", hashed_password),
-        ("Sanaa", "El Amrani", "sanaa.rh@entreprise.ma", "+212 6 62 98 76 54", "Tanger, Boukhalef", "employee", "Ressources Humaines", "2024-11-01", 35, "09:00-16:00", hashed_password),
-        ("Hanane", "Bouhyla", "hanane.bouhyla@entreprise.ma", "+212 6 63 99 88 77", "Tanger, Centre Ville", "secretaire", "Technique", "2024-06-01", 35, "09:00-16:00", hashed_password),
+        ("Sanaa", "El Amrani", "sanaa.rh@entreprise.ma", "+212 6 62 98 76 54", "Tanger, Boukhalef", "secretaire", "Ressources Humaines", "2024-11-01", 35, "09:00-16:00", hashed_password),
+        ("Hanane", "Bouhyla", "hananeymed2020@gmail.com", "+212 6 63 99 88 77", "Tanger, Centre Ville", "employee", "Technique", "2024-06-01", 35, "09:00-16:00", "hanane123"),
         ("Amine", "Benjelloun", "amine.sys@entreprise.ma", "+212 6 63 45 12 89", "Tanger, Mesnana", "employee", "Technique", "2025-05-10", 35, "09:00-16:00", hashed_password),
         ("Layla", "Kadiri", "layla.mkt@entreprise.ma", "+212 6 68 00 11 22", "Tanger, Val Fleuri", "employee", "Marketing", "2025-02-02", 35, "09:00-16:00", hashed_password)
     ]
-    
-    # Note : J'ai gardé ta structure exacte d'employés. J'ai retiré temporairement 
-    # certains doublons de noms pour éviter l'erreur SQLite "UNIQUE constraint failed" au cas où.
     
     cursor.executemany("""
         INSERT INTO employes (nom, prenom, email, telephone, adresse, poste, departement, date_recrutement, heures_travail, disponibilite, mot_de_passe)
@@ -240,11 +252,16 @@ def inserer_infos_smart_automation():
         (
             "Présentation et Historique de Smart Automation Technologies",
             "culture_entreprise",
-            "Fondée pour accompagner la dynamique industrielle de la région de Tanger-Tétouan-Al Hoceïma, "
-            "Smart Automation Technologies est une enterprise marocaine de pointe basée à Tanger, "
-            "spécialisée dans l'automatisation industrielle, l'intégration de systèmes internes intelligentes...",
+            "Smart Automation Technologies (SAT) est une entreprise marocaine de pointe basée à Tanger, spécialisée dans l'automatisation industrielle, la robotique, et l'intégration de systèmes intelligents. Elle a été fondée le 15 Janvier 2018 par Monsieur Younes El Fassi, un ingénieur visionnaire passionné par l'industrie 4.0. L'entreprise est située dans la Zone Franche de Tanger (Tanger Free Zone), Lot 45, Bâtiment A. Elle accompagne la dynamique industrielle de la région de Tanger-Tétouan-Al Hoceïma, particulièrement les secteurs automobile et aéronautique.",
             "data/smart_automation/histoire.txt",
             '{"categorie": "histoire", "ville": "Tanger"}'
+        ),
+        (
+            "Services et Produits",
+            "culture_entreprise",
+            "Smart Automation Technologies propose trois domaines d'expertise majeurs : 1) La conception et le déploiement de chaînes de montage robotisées. 2) Le développement de logiciels sur-mesure de type ERP et de supervision industrielle (SCADA). 3) L'intégration de l'Intelligence Artificielle pour la maintenance prédictive et la gestion intelligente des ressources. SAT emploie actuellement 35 ingénieurs et techniciens hautement qualifiés.",
+            "data/smart_automation/services.txt",
+            '{"categorie": "services", "domaine": "IA et Robotique"}'
         )
     ]
     

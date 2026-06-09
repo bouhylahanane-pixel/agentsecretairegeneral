@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends
-from models.schemas import UserResponse, UserCreate, UserUpdate, UserStatusUpdate, UserPasswordReset
+from models.schemas import UserResponse, UserCreate, UserUpdate, UserStatusUpdate, UserPasswordReset, UserRoleUpdate
 from api.routers.auth import require_roles, get_current_user, normalize_role, pwd_context, DB_PATH
 from tools.history_manager import save_history
 
@@ -50,7 +50,7 @@ def get_users(search: str = None, role: str = None, is_active: bool = None, curr
     return users
 
 @router.post("", response_model=UserResponse)
-def create_user(user: UserCreate, current_user: dict = Depends(require_roles(["admin"]))):
+def create_user(user: UserCreate, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     if user.role not in ["admin", "secretaire", "employee", "stagiaire"]:
         raise HTTPException(status_code=400, detail="Rôle invalide.")
         
@@ -72,6 +72,14 @@ def create_user(user: UserCreate, current_user: dict = Depends(require_roles(["a
         """, (user.nom, user.email, user.role, hashed_pwd, 1 if user.is_active else 0, now_str, now_str))
         new_id = cursor.lastrowid
         conn.commit()
+
+        # Synchroniser avec la table stagiaires
+        if user.role == "stagiaire":
+            cursor.execute("""
+                INSERT INTO stagiaires (nom, email, telephone, adresse, ecole_etudes, sujet_stage, date_debut, date_fin)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (user.nom, user.email, "", "", "À définir", "Stage d'application", now_str[:10], "À définir"))
+            conn.commit()
     except sqlite3.OperationalError as e:
         if "no such column: is_active" in str(e) or "has no column named" in str(e):
             cursor.execute("""
@@ -80,6 +88,14 @@ def create_user(user: UserCreate, current_user: dict = Depends(require_roles(["a
             """, (user.nom, user.email, user.role, hashed_pwd))
             new_id = cursor.lastrowid
             conn.commit()
+            
+            # Synchroniser avec la table stagiaires
+            if user.role == "stagiaire":
+                cursor.execute("""
+                    INSERT INTO stagiaires (nom, email, telephone, adresse, ecole_etudes, sujet_stage, date_debut, date_fin)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (user.nom, user.email, "", "", "À définir", "Stage d'application", now_str[:10], "À définir"))
+                conn.commit()
         else:
             conn.close()
             raise HTTPException(status_code=500, detail=str(e))
@@ -114,7 +130,7 @@ def get_user(user_id: int, current_user: dict = Depends(require_roles(["admin"])
     return map_db_to_user(row)
 
 @router.put("/{user_id}", response_model=UserResponse)
-def update_user(user_id: int, user: UserUpdate, current_user: dict = Depends(require_roles(["admin"]))):
+def update_user(user_id: int, user: UserUpdate, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -170,6 +186,24 @@ def update_user(user_id: int, user: UserUpdate, current_user: dict = Depends(req
         params.append(user_id)
         cursor.execute(query, params)
         conn.commit()
+
+        # Synchroniser avec la table stagiaires
+        if user.role is not None:
+            if user.role == "stagiaire":
+                # Vérifier si l'utilisateur est déjà dans la table stagiaires
+                cursor.execute("SELECT id FROM stagiaires WHERE email = ?", (row["email"],))
+                if not cursor.fetchone():
+                    telephone = row["telephone"] if "telephone" in row.keys() else ""
+                    adresse = row["adresse"] if "adresse" in row.keys() else ""
+                    cursor.execute("""
+                        INSERT INTO stagiaires (nom, email, telephone, adresse, ecole_etudes, sujet_stage, date_debut, date_fin)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (user.nom or row["nom"], user.email or row["email"], telephone, adresse, "À définir", "Stage d'application", now_str[:10], "À définir"))
+                    conn.commit()
+            else:
+                # Si le rôle n'est plus stagiaire, le retirer de la table stagiaires
+                cursor.execute("DELETE FROM stagiaires WHERE email = ?", (row["email"],))
+                conn.commit()
         
     cursor.execute("SELECT * FROM employes WHERE id = ?", (user_id,))
     updated_row = cursor.fetchone()
@@ -185,7 +219,7 @@ def update_user(user_id: int, user: UserUpdate, current_user: dict = Depends(req
     return map_db_to_user(updated_row)
 
 @router.patch("/{user_id}/status", response_model=UserResponse)
-def update_user_status(user_id: int, status_update: UserStatusUpdate, current_user: dict = Depends(require_roles(["admin"]))):
+def update_user_status(user_id: int, status_update: UserStatusUpdate, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -220,8 +254,65 @@ def update_user_status(user_id: int, status_update: UserStatusUpdate, current_us
     
     return map_db_to_user(updated_row)
 
+@router.patch("/{user_id}/role", response_model=UserResponse)
+def update_user_role(user_id: int, role_update: UserRoleUpdate, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
+    if role_update.role not in ["admin", "secretaire", "employee", "stagiaire"]:
+        raise HTTPException(status_code=400, detail="Rôle invalide.")
+        
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM employes WHERE id = ?", (user_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
+        
+    if row["email"] == current_user["email"] and role_update.role != "admin":
+        conn.close()
+        raise HTTPException(status_code=400, detail="Impossible de retirer son propre rôle admin.")
+        
+    now_str = datetime.utcnow().isoformat()
+    if "poste" in row.keys():
+        if "updated_at" in row.keys():
+            cursor.execute("UPDATE employes SET poste = ?, updated_at = ? WHERE id = ?", 
+                           (role_update.role, now_str, user_id))
+        else:
+            cursor.execute("UPDATE employes SET poste = ? WHERE id = ?", 
+                           (role_update.role, user_id))
+        conn.commit()
+
+        # Synchroniser avec la table stagiaires
+        if role_update.role == "stagiaire":
+            cursor.execute("SELECT id FROM stagiaires WHERE email = ?", (row["email"],))
+            if not cursor.fetchone():
+                telephone = row["telephone"] if "telephone" in row.keys() else ""
+                adresse = row["adresse"] if "adresse" in row.keys() else ""
+                cursor.execute("""
+                    INSERT INTO stagiaires (nom, email, telephone, adresse, ecole_etudes, sujet_stage, date_debut, date_fin)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (row["nom"], row["email"], telephone, adresse, "À définir", "Stage d'application", now_str[:10], "À définir"))
+                conn.commit()
+        else:
+            cursor.execute("DELETE FROM stagiaires WHERE email = ?", (row["email"],))
+            conn.commit()
+    
+    cursor.execute("SELECT * FROM employes WHERE id = ?", (user_id,))
+    updated_row = cursor.fetchone()
+    conn.close()
+    
+    save_history({
+        "user": current_user["email"], 
+        "action": f"USER_ROLE_UPDATED: {row['email']} to {role_update.role}", 
+        "priorite": "Haute",
+        "temps_execution": 0
+    })
+    
+    return map_db_to_user(updated_row)
+
 @router.post("/{user_id}/reset-password")
-def reset_password(user_id: int, passwords: UserPasswordReset, current_user: dict = Depends(require_roles(["admin"]))):
+def reset_password(user_id: int, passwords: UserPasswordReset, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
     if passwords.new_password != passwords.confirm_password:
         raise HTTPException(status_code=400, detail="Les mots de passe ne correspondent pas.")
         

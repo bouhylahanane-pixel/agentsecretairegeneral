@@ -5,7 +5,6 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Chemin vers la base de données unique
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "database.db")
@@ -88,7 +87,7 @@ RÉPONSE :
 
         response = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            headers={"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}", "Content-Type": "application/json"},
             json={
                 "model": "llama-3.3-70b-versatile",
                 "messages": [
@@ -105,6 +104,78 @@ RÉPONSE :
     except Exception as e:
         print("Erreur RAG :", e)
         return "Impossible d'interroger la base de connaissances pour le moment."
+
+# ==========================================
+# 🔐 RAG Restreint (Espace Employé)
+# ==========================================
+def interroger_rag_employe(question: str, current_user: dict) -> str:
+    """Récupère uniquement les documents officiels validés de l'employé pour le contexte."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # On récupère les attestations/PV de l'employé générés et prêts
+    cursor.execute("""
+        SELECT document_type, motif, details, status, created_at
+        FROM document_requests
+        WHERE requester_id = ? AND status IN ('ready', 'delivered')
+    """, (current_user["id"],))
+    
+    rows = cursor.fetchall()
+    conn.close()
+    
+    # Formater les informations personnelles du user depuis la base de données (backend)
+    user_info = "\n".join([f"- {k.upper()}: {v}" for k, v in current_user.items() if k not in ["mot_de_passe", "id", "is_active", "created_at", "updated_at"]])
+    
+    # Récupérer des informations générales sur l'entreprise pertinentes par rapport à la question
+    contexte_entreprise = rechercher_documents_pertinents(question, limit=2)
+    
+    contexte = f"INFORMATIONS PERSONNELLES DE L'UTILISATEUR :\n{user_info}\n\n"
+    
+    contexte += f"INFORMATIONS GÉNÉRALES DE L'ENTREPRISE (RÈGLEMENTS, HISTORIQUE, ETC.) :\n{contexte_entreprise}\n\n"
+    
+    if rows:
+        contexte += "DOCUMENTS OFFICIELS DE L'UTILISATEUR :\n"
+        for r in rows:
+            contexte += f"TYPE: {r['document_type'].upper()}\nDATE: {r['created_at']}\nSTATUT: {r['status']}\nMOTIF DE LA DEMANDE: {r['motif']}\nCONTENU DU DOCUMENT: {r['details']}\n\n"
+    else:
+        contexte += "L'utilisateur n'a actuellement aucun document officiel validé dans son coffre-fort numérique.\n\n"
+        
+    try:
+        prompt = f"""
+Tu es l'assistant virtuel IA ultra-sécurisé du coffre-fort numérique de l'employé/stagiaire.
+Tu dois répondre à la question EN TE BASANT EXCLUSIVEMENT sur ses informations personnelles, la liste de ses documents officiels, et les informations générales de l'entreprise ci-dessous.
+Il est STRICTEMENT INTERDIT d'inventer des informations qui ne figurent pas dans ce contexte.
+Si la réponse ne se trouve pas dans les documents ou informations ci-dessous, dis explicitement que tu n'as pas l'information et invite-le à formuler une nouvelle demande au Secrétariat Général.
+
+CONTEXTE (INFORMATIONS ET DOCUMENTS) :
+{contexte}
+
+QUESTION DE L'UTILISATEUR :
+{question}
+
+RÉPONSE :
+"""
+
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}", "Content-Type": "application/json"},
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {"role": "system", "content": "Tu es un agent administratif d'entreprise restreint au coffre-fort de l'utilisateur."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.1
+            }
+        )
+        
+        result = response.json()
+        return result["choices"][0]["message"]["content"].strip()
+        
+    except Exception as e:
+        print("Erreur RAG Restreint :", e)
+        return "Impossible d'analyser vos documents pour le moment en raison d'une erreur technique."
 
 # ==========================================
 # 📥 Indexer un document
@@ -128,10 +199,10 @@ if __name__ == "__main__":
     print("\n--- 🛰️ DEBUT DU TEST RAG PIPELINE ---")
     
     # 1. Vérification de la clé API
-    if not GROQ_API_KEY:
+    if not os.environ.get("GROQ_API_KEY"):
         print("❌ Erreur : GROQ_API_KEY n'est pas configurée dans ton fichier .env !")
     else:
-        print(f"🔑 Clé API détectée : {GROQ_API_KEY[:8]}...")
+        print(f"🔑 Clé API détectée : {os.environ.get('GROQ_API_KEY')[:8]}...")
 
     # 2. Vérification de la base de données
     print(f"📂 Chemin de la base : {DB_PATH}")

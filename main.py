@@ -39,12 +39,16 @@ app.add_middleware(
 )
 
 # 3. Routeurs API modulaires (/api/*)
-from api.routers import analyze, instances, minutes, tasks, auth, documents, document_requests
+from api.routers import (
+    analyze, auth, documents, users, tasks,
+    document_requests, instances, minutes, chat
+)
 
 app.include_router(instances.router)
 app.include_router(analyze.router)
 app.include_router(auth.router)
 app.include_router(minutes.router)
+app.include_router(chat.router)
 app.include_router(tasks.router)
 app.include_router(documents.router)
 app.include_router(document_requests.router)
@@ -52,13 +56,15 @@ app.include_router(document_requests.router)
 from api.routers import users
 app.include_router(users.router)
 
+from api.routers import config
+app.include_router(config.router)
+
 from api.routers.auth import get_current_user, require_roles
 
 from dotenv import load_dotenv
 load_dotenv()
 
 # 🟢 Récupération sécurisée de la clé Groq stockée dans l'environnement (chargée par ton .env)
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 from data.database_manager import init_db
 from tools.rag_engine import init_rag_table
@@ -148,7 +154,7 @@ async def generate_pv(request: Request, current_user: dict = Depends(require_rol
 
         # 2. Transcription Whisper enrichie
         whisper_url = "https://api.groq.com/openai/v1/audio/transcriptions"
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
         
         # Vocabulaire renforcé pour éviter "critérium" et "Southrimlit"
         invite_contexte = "Secrétariat Intelligent, suivi de projet, Meryem, Sanaa, Ahmed, Scikit-Learn, Streamlit, FastAPI, SQLite, frontend, backend, route API."
@@ -334,7 +340,7 @@ async def upload_pv(request: Request, current_user: dict = Depends(require_roles
 
         # 2. Transcription via Whisper Groq
         whisper_url = "https://api.groq.com/openai/v1/audio/transcriptions"
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
         invite_contexte = "Secrétariat Intelligent, suivi de projet, Meryem, Sanaa, Ahmed, Scikit-Learn, Streamlit, FastAPI, SQLite, frontend, backend, route API."
 
         # Détermination du content_type
@@ -519,7 +525,7 @@ async def transcribe_audio(request: Request, current_user: dict = Depends(requir
             raise HTTPException(status_code=400, detail="Le flux audio est vide.")
 
         whisper_url = "https://api.groq.com/openai/v1/audio/transcriptions"
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
         invite_contexte = "Secrétariat Intelligent, suivi de projet, Meryem, Sanaa, Ahmed, Scikit-Learn, Streamlit, FastAPI, SQLite."
 
         with open(temp_audio_path, "rb") as audio_file_obj:
@@ -565,7 +571,7 @@ async def structure_text(data: dict, current_user: dict = Depends(require_roles(
     try:
         # Analyse par Llama 3.3
         llm_url = "https://api.groq.com/openai/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
         prompt_systeme = (
             "Tu es un secrétaire de direction expert. Extrais les informations clés sous forme d'un objet JSON valide.\n"
             "Format JSON attendu :\n"
@@ -730,33 +736,116 @@ async def plan_meeting(data: dict, current_user: dict = Depends(require_roles(["
 
 @app.post("/meetings/trigger-invitations", tags=["Meetings"])
 async def trigger_invitations(data: dict, current_user: dict = Depends(require_roles(["admin", "secretaire"]))):
-    """Déclenche les invitations SMTP pour les réunions planifiées."""
+    """Déclenche les invitations SMTP pour les réunions planifiées avec le PDF."""
     meeting_title = data.get("titre", "Réunion du Secrétariat")
     meeting_date = data.get("date", "2026-06-05")
+    meeting_heure = data.get("heure", "10:00")
+    meeting_objet = data.get("objet", "Ordre du jour non spécifié")
+    participants_str = data.get("participants", "")
     
     from tools.history_manager import save_history
-    from tools.email_sender import send_invitation_email
+    from services.email_service import send_email
+    from tools.pdf_generator import generate_convocation_reunion_pdf
+    import sqlite3
+    from data.database_manager import DB_PATH
 
-    # Envoi de l'email (vers notre propre adresse de test, ou à une liste configurée)
-    # Dans la réalité, on prendrait la liste des membres du comité.
-    import os
-    test_email = os.getenv("EMAIL_USER", "agentsecretairegeneral@gmail.com")
+    target_emails = []
+    if participants_str:
+        noms = [p.strip() for p in participants_str.split(",") if p.strip()]
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        for nom in noms:
+            search_term = f"%{nom}%"
+            # Chercher dans les employés (gère nom+prenom ou prenom+nom)
+            query_emp = """
+                SELECT email FROM employes 
+                WHERE (COALESCE(prenom, '') || ' ' || COALESCE(nom, '')) LIKE ? 
+                   OR (COALESCE(nom, '') || ' ' || COALESCE(prenom, '')) LIKE ?
+                   OR prenom LIKE ? 
+                   OR nom LIKE ?
+            """
+            cursor.execute(query_emp, (search_term, search_term, search_term, search_term))
+            res = cursor.fetchone()
+            
+            if res and res[0]:
+                target_emails.append(res[0])
+            else:
+                # Chercher dans les stagiaires si non trouvé dans employés
+                query_stg = """
+                    SELECT email FROM stagiaires 
+                    WHERE (COALESCE(prenom, '') || ' ' || COALESCE(nom, '')) LIKE ? 
+                       OR (COALESCE(nom, '') || ' ' || COALESCE(prenom, '')) LIKE ?
+                       OR prenom LIKE ? 
+                       OR nom LIKE ?
+                """
+                cursor.execute(query_stg, (search_term, search_term, search_term, search_term))
+                res_stg = cursor.fetchone()
+                if res_stg and res_stg[0]:
+                    target_emails.append(res_stg[0])
+        conn.close()
+
+    # Nettoyer les doublons
+    target_emails = list(set(target_emails))
+
+    # Si aucun email n'est trouvé, utiliser l'email de l'utilisateur actuel comme secours
+    if not target_emails:
+        target_emails = [current_user.get("email", "bouhyla.hanane@etu.uae.ac.ma")]
     
-    success = send_invitation_email(meeting_title, meeting_date, [test_email])
+    # Génération du PDF de convocation
+    pdf_params = {
+        "titre": meeting_title,
+        "date": meeting_date,
+        "heure": meeting_heure,
+        "lieu": "Salle de Réunion (Automatique)",
+        "objet": meeting_objet,
+        "participants": participants_str
+    }
+    try:
+        pdf_filename = generate_convocation_reunion_pdf(pdf_params)
+        import os
+        if pdf_filename:
+            pdf_filename = os.path.abspath(pdf_filename)
+    except Exception as e:
+        print(f"Erreur lors de la génération du PDF: {e}")
+        pdf_filename = None
+
+    print(f"--- PREPARATION ENVOI EMAIL ---")
+    print(f"Titre: {meeting_title}")
+    print(f"Participants trouvés: {target_emails}")
+    print(f"PDF généré à: {pdf_filename}")
     
-    if success:
+    # Envoi de l'email pour CHAQUE participant avec le PDF en pièce jointe
+    success_count = 0
+    for dest_email in target_emails:
+        body = f"Bonjour,\n\nVous êtes convoqué(e) à la réunion '{meeting_title}' prévue le {meeting_date} à {meeting_heure}.\n\nVeuillez trouver la convocation officielle en pièce jointe.\n\nCordialement,\nLe Secrétariat"
+        print(f"Envoi vers {dest_email}...")
+        res = send_email(
+            to_email=dest_email,
+            subject=f"Convocation : {meeting_title}",
+            body=body,
+            attachment_path=pdf_filename
+        )
+        print(f"Resultat pour {dest_email}: {res}")
+        if "succès" in res:
+            success_count += 1
+    
+    print(f"--- FIN ENVOI EMAIL: {success_count} réussis ---")
+    
+    if success_count > 0:
         save_history({
-            "user": "Meryem",
+            "user": current_user.get("name", "Secrétaire"),
             "action": f"SMTP Invitations sent: {meeting_title}",
             "priorite": "Moyenne",
             "temps_execution": 420
         })
+        emails_sent_str = ", ".join(target_emails)
         return {
             "status": "success",
-            "message": f"SMTP Invitations envoyées avec succès pour la réunion '{meeting_title}' le {meeting_date}."
+            "message": f"Succès: {success_count} email(s) envoyé(s) à {emails_sent_str}."
         }
     else:
-        raise HTTPException(status_code=500, detail="Échec de l'envoi de l'email SMTP. Veuillez vérifier votre configuration .env.")
+        raise HTTPException(status_code=500, detail="Échec de l'envoi de l'email SMTP. Assurez-vous que vos identifiants SMTP sont corrects dans le fichier .env.")
 
 
 # ==========================================

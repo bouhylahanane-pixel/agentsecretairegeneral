@@ -5,7 +5,6 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()  # Charge les variables du fichier .env
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Chemins d'accès absolus et dynamiques vers nos bases de données SQLite
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "database.db")
@@ -141,7 +140,7 @@ Message :
         response = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}",
                 "Content-Type": "application/json"
             },
             json={

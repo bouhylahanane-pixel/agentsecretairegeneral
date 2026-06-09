@@ -16,7 +16,7 @@ from services.voice_service import text_to_speech
 
 # Base URL de ton API FastAPI (Aligné sur ton port 8001)
 API_URL = "http://127.0.0.1:8001"
-GROQ_API_KEY = os.getenv("GROQ_API_KEY") 
+ 
 
 # Configuration de la page
 st.set_page_config(page_title="Dashboard & Agent IA", layout="wide", page_icon="🤖")
@@ -38,7 +38,7 @@ def transcrire_audio_whisper(audio_bytes):
         
     with st.spinner("⏳ Whisper analyse votre voix..."):
         url = "https://api.groq.com/openai/v1/audio/transcriptions"
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+        headers = {"Authorization": f"Bearer {os.environ.get("GROQ_API_KEY")}"}
         
         mots_cles_fixes = ["génère", "attestation de stage", "relevé de notes", "certificat", "dashboard", "analytics"]
         

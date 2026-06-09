@@ -3,13 +3,14 @@ import re
 from datetime import UTC, datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
 from api.routers.auth import DB_PATH, get_current_user, require_roles
 from api.routers.documents import GenerateDocumentRequest, generate_document_pdf
 from services.llm_service import _appel_groq_json
 from tools.history_manager import save_history
+from tools.notification_service import send_attestation_ready_email
 
 router = APIRouter(prefix="/api/document-requests", tags=["Document Requests"])
 
@@ -518,6 +519,7 @@ def prepare_document_request_with_ai(
 def generate_document_from_request(
     request_id: int,
     payload: DocumentRequestGeneratePayload,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(require_roles(["admin", "secretaire"])),
 ):
     row = fetch_request_or_404(request_id)
@@ -560,6 +562,13 @@ def generate_document_from_request(
     cursor.execute(f"{DOCUMENT_REQUEST_SELECT} WHERE document_requests.id = ?", (request_id,))
     updated = cursor.fetchone()
     conn.close()
+
+    user_email = payload.requester_email_override or row["requester_email"]
+    user_name = payload.requester_name_override or row["requester_name"] or row["requester_email"] or "Utilisateur"
+    doc_type = document_label(row["document_type"])
+
+    if user_email:
+        background_tasks.add_task(send_attestation_ready_email, user_email, user_name, doc_type)
 
     log_document_request(current_user, "DOCUMENT_REQUEST_GENERATED", request_id)
     log_document_request(current_user, "DOCUMENT_REQUEST_READY", request_id)

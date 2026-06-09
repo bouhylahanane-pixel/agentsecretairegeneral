@@ -86,16 +86,22 @@ def get_analytics_stats():
         # 3. Temps de réponse moyen (Correction du nom de colonne : temps_execution)
         cursor.execute("SELECT AVG(temps_execution) FROM logs_activite")
         temps_moyen = cursor.fetchone()[0] or 0
+        
+        # 4. Nombre total de réunions organisées
+        cursor.execute("SELECT COUNT(*) FROM logs_activite WHERE action_requise = 'create_meeting' OR action_requise LIKE '%Réunion%'")
+        total_reunions = cursor.fetchone()[0] or 0
+        
     except sqlite3.OperationalError as e:
         print("🚨 Erreur Analytics SQL :", e)
-        total_requetes, total_urgences, temps_moyen = 0, 0, 0
+        total_requetes, total_urgences, temps_moyen, total_reunions = 0, 0, 0, 0
     finally:
         conn.close()
     
     return {
         "total_requests": total_requetes,
         "total_urgencies": total_urgences,
-        "average_response_time_ms": round(temps_moyen, 2)
+        "average_response_time_ms": round(temps_moyen, 2),
+        "total_meetings": total_reunions
     }
 
 def get_activity_by_action():
@@ -105,10 +111,56 @@ def get_activity_by_action():
     cursor = conn.cursor()
     
     try:
-        # Correction de la table (logs_activite) et de la colonne (action_requise)
-        cursor.execute("SELECT action_requise, COUNT(*) as quantite FROM logs_activite GROUP BY action_requise")
+        cursor.execute("SELECT action_requise FROM logs_activite")
         rows = cursor.fetchall()
-        resultat = {row["action_requise"] if row["action_requise"] else "Règlement/Autre": row["quantite"] for row in rows}
+        
+        resultat = {}
+        for row in rows:
+            action_brute = row["action_requise"] if row["action_requise"] else "Autre"
+            
+            # Normalisation intelligente des actions
+            action_nettoye = action_brute
+            if action_brute.startswith("DOCUMENT_REQUEST_CREATED"):
+                action_nettoye = "Demande de Document Créée"
+            elif action_brute.startswith("DOCUMENT_REQUEST_IN_PROGRESS"):
+                action_nettoye = "Demande de Document En Cours"
+            elif action_brute.startswith("DOCUMENT_REQUEST_AI_PREPARED") or action_brute.startswith("DOCUMENT_REQUEST_GENERATED"):
+                action_nettoye = "Document Généré (IA)"
+            elif action_brute.startswith("DOCUMENT_REQUEST_READY"):
+                action_nettoye = "Document Prêt"
+            elif action_brute.startswith("DOCUMENT_REQUEST_DELIVERED"):
+                action_nettoye = "Document Livré"
+            elif action_brute.startswith("DOCUMENT_REQUEST_REJECTED"):
+                action_nettoye = "Demande Rejetée"
+            elif action_brute.startswith("USER_UPDATED") or action_brute.startswith("USER_ROLE_UPDATED"):
+                action_nettoye = "Mise à Jour Utilisateur"
+            elif action_brute.startswith("USER_ENABLED") or action_brute.startswith("USER_DISABLED"):
+                action_nettoye = "Statut Compte Modifié"
+            elif action_brute.startswith("LOGIN_BLOCKED"):
+                action_nettoye = "Tentative de Connexion Bloquée"
+            elif action_brute.startswith("SMTP Invitations sent"):
+                action_nettoye = "Envoi Email (SMTP)"
+            elif action_brute.startswith("Analyse E-Mail"):
+                action_nettoye = "Analyse Juridique d'Email"
+            elif action_brute in ["generate_document", "create_meeting", "consult_regulation", "generate_pv", "process_email"]:
+                trad_map = {
+                    "generate_document": "Génération Rapide de Document",
+                    "create_meeting": "Création de Réunion",
+                    "consult_regulation": "Consultation Règlement IA",
+                    "generate_pv": "Génération Procès-Verbal",
+                    "process_email": "Traitement d'Email"
+                }
+                action_nettoye = trad_map[action_brute]
+            else:
+                # Si l'action contient les deux points ":", on coupe pour avoir juste la catégorie globale
+                if ":" in action_brute:
+                    action_nettoye = action_brute.split(":")[0].strip()
+            
+            if action_nettoye in resultat:
+                resultat[action_nettoye] += 1
+            else:
+                resultat[action_nettoye] = 1
+                
     except sqlite3.OperationalError:
         resultat = {}
     finally:
